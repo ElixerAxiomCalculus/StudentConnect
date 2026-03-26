@@ -1,0 +1,28 @@
+.results-container {
+  min-height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed; 
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-title {
+  color: #1A2B4C; 
+  font-family: 'Inter', sans-serif; 
+  margin-bottom: 40px;
+  font-size: 36px;
+  text-align: center;
+}
+
+.cards-grid {
+  display: flex;
+  flex-wrap: wrap; 
+  justify-content: center;
+  gap: 32px; 
+  max-width: 1200px; 
+  width: 100%;
+}
