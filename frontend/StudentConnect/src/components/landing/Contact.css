@@ -1,0 +1,75 @@
+.contact-section {
+  padding: 80px 20px 120px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.contact-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  max-width: 1000px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 48px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.text-left {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.contact-desc {
+  color: #4A5568;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.dummy-details p {
+  font-size: 16px;
+  color: #1A2B4C;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.contact-form {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.glass-input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.5);
+  font-family: inherit;
+  font-size: 16px;
+  color: #1A2B4C;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.glass-input:focus {
+  border-color: #FF5A5F;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 8px;
+}
