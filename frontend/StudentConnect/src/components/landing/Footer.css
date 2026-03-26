@@ -1,0 +1,15 @@
+.glass-footer {
+  width: 100%;
+  padding: 24px;
+  background: rgba(26, 43, 76, 0.1); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  text-align: center;
+}
+
+.footer-content p {
+  color: #1A2B4C;
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,0 +1,78 @@
+.floating-nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  width: 90%;
+  max-width: 1200px;
+  padding: 12px 24px;
+  
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 100px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.brand-text {
+  font-size: 20px;
+  color: #FF5A5F;
+}
+
+.brand-text strong {
+  color: #1A2B4C;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #4A5568;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: #FF5A5F;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.login-btn {
+  background: transparent;
+  border: none;
+  color: #1A2B4C;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.signup-btn {
+  background-color: #FF5A5F;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.signup-btn:hover {
+  transform: translateY(-2px);
+}
