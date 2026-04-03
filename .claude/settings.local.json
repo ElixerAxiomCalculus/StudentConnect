@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -c \"import bcrypt, jwt; print\\(''bcrypt:'', bcrypt.__version__, ''| PyJWT:'', jwt.__version__\\)\")",
-      "Bash(python -c \"import resend; print\\(''resend ok''\\)\")",
-      "Bash(curl -s http://localhost:8000/health)"
-    ]
-  }
-}
