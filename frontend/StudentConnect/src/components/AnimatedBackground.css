@@ -1,65 +1,103 @@
-.animated-bg-container {
+.landing-ambient {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  background-color: #F8FAFC; 
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 196, 158, 0.5), transparent 32%),
+    radial-gradient(circle at 82% 18%, rgba(59, 89, 153, 0.18), transparent 30%),
+    radial-gradient(circle at 50% 78%, rgba(0, 172, 237, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 235, 230, 0.97), rgba(245, 240, 250, 0.97));
 }
 
-
-.color-orb {
+.landing-ambient__gradient,
+.landing-ambient__mesh,
+.landing-ambient__noise,
+.landing-ambient__orb {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(150px); 
-  opacity: 0.85; 
-  will-change: transform; 
-  animation: float 15s infinite ease-in-out alternate; 
+  inset: 0;
 }
 
-
-.orb-1 {
-  width: 80vw; 
-  height: 80vw;
-  background: #FF8FA3; 
-  top: -20%;
-  left: -10%;
-  animation-delay: 0s;
+.landing-ambient__gradient {
+  background:
+    radial-gradient(circle at 8% 76%, rgba(212, 67, 50, 0.18), transparent 22%),
+    radial-gradient(circle at 74% 62%, rgba(0, 128, 178, 0.12), transparent 20%),
+    radial-gradient(circle at 40% 28%, rgba(255, 255, 255, 0.5), transparent 26%);
 }
 
-.orb-2 {
-  width: 80vw;
-  height: 80vw;
-  background: #8AB4F8;
-  bottom: -20%;
-  right: -20%;
-  animation-delay: -7s; 
+.landing-ambient__orb {
+  border-radius: 999px;
+  filter: blur(50px);
+  opacity: 0.62;
+  will-change: transform;
+  animation: landingAmbientFloat 18s ease-in-out infinite alternate;
 }
 
-.orb-3 {
-  width: 70vw;
-  height: 70vw;
-  background: #C58BF2;
-  top: 20%;
-  left: 15%;
+.landing-ambient__orb--coral {
+  top: -10%;
+  left: -6%;
+  width: 42vw;
+  height: 42vw;
+  background: radial-gradient(circle, rgba(212, 67, 50, 0.34), rgba(255, 145, 120, 0.12) 52%, transparent 72%);
+}
+
+.landing-ambient__orb--blue {
+  top: 10%;
+  right: -10%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(circle, rgba(59, 89, 153, 0.28), rgba(0, 172, 237, 0.12) 54%, transparent 74%);
+  animation-delay: -6s;
+}
+
+.landing-ambient__orb--sky {
+  bottom: -16%;
+  left: 24%;
+  width: 32vw;
+  height: 32vw;
+  background: radial-gradient(circle, rgba(0, 128, 178, 0.16), rgba(255, 255, 255, 0.1) 56%, transparent 76%);
   animation-delay: -11s;
 }
 
-.grain-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none; 
+.landing-ambient__mesh {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.24) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(circle at center, black 45%, transparent 90%);
+  opacity: 0.3;
 }
 
-@keyframes float {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(10vw, 8vh) scale(1.05); }
-  66% { transform: translate(-8vw, 10vh) scale(0.95); }
-  100% { transform: translate(-10vw, -8vh) scale(1); }
+.landing-ambient__noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.55;
+}
+
+@keyframes landingAmbientFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(3vw, -2vh, 0) scale(1.04);
+  }
+
+  100% {
+    transform: translate3d(-4vw, 5vh, 0) scale(0.96);
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-ambient__orb--coral,
+  .landing-ambient__orb--blue {
+    width: 68vw;
+    height: 68vw;
+  }
+
+  .landing-ambient__orb--sky {
+    width: 58vw;
+    height: 58vw;
+    left: 10%;
+  }
 }

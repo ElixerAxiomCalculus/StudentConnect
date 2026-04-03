@@ -12,8 +12,7 @@ import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
-import { getProjects, createProject } from '../data/api';
-import { users, currentUser } from '../data/mockData';
+import { getProjects, createProject, getCurrentUser, getUsers, createProjectTask, updateProjectTask, deleteProjectTask, removeProjectMember } from '../data/api';
 import gsap from 'gsap';
 
 const roleIcons = {
@@ -47,10 +46,14 @@ export default function ProjectsPage() {
     const [form, setForm] = useState({ title: '', description: '', tags: '', visibility: 'public' });
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('recent');
+    const [currentUser, setCurrentUser] = useState({ id: 'u0', name: 'Sayak M' });
+    const [users, setUsers] = useState([]);
     const addToast = useToast();
 
     useEffect(() => {
         getProjects().then(setProjectsList);
+        getCurrentUser().then(setCurrentUser).catch(() => { });
+        getUsers().then(setUsers).catch(() => { });
     }, []);
 
     const handleCreate = async () => {
@@ -98,6 +101,8 @@ export default function ProjectsPage() {
                     setSelectedProject(updated);
                 }}
                 addToast={addToast}
+                users={users}
+                currentUser={currentUser}
             />
         );
     }
@@ -254,7 +259,7 @@ export default function ProjectsPage() {
 }
 
 /* ═══ Project Detail View ═══ */
-function ProjectDetailView({ project, onBack, onUpdate, addToast }) {
+function ProjectDetailView({ project, onBack, onUpdate, addToast, users, currentUser }) {
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
     const [showAddTask, setShowAddTask] = useState(false);
     const [showInvite, setShowInvite] = useState(false);
@@ -272,38 +277,43 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast }) {
 
     const isOwner = project.members.some(m => m.id === 'u0' && m.role === 'owner');
 
-    const addTask = () => {
+    const addTask = async () => {
         if (!taskForm.title.trim()) return;
-        const newTask = {
-            id: 'tk' + Date.now(),
-            title: taskForm.title,
-            description: taskForm.description,
-            assignee: taskForm.assignee || 'u0',
-            deadline: taskForm.deadline || null,
-            status: taskForm.status,
-        };
-        const updated = { ...project, tasks: [...tasks, newTask], activity: [{ text: `${currentUser.name} added task "${newTask.title}"`, time: new Date().toISOString() }, ...project.activity] };
-        updated.progress = Math.round((updated.tasks.filter(t => t.status === 'done').length / updated.tasks.length) * 100);
-        onUpdate(updated);
-        setTaskForm({ title: '', description: '', assignee: '', deadline: '', status: 'todo' });
-        setShowAddTask(false);
-        addToast?.('Task created', 'success');
+        try {
+            const updated = await createProjectTask(project.id, {
+                title: taskForm.title,
+                description: taskForm.description,
+                assignee: taskForm.assignee || 'u0',
+                deadline: taskForm.deadline || null,
+                status: taskForm.status,
+            });
+            onUpdate(updated);
+            setTaskForm({ title: '', description: '', assignee: '', deadline: '', status: 'todo' });
+            setShowAddTask(false);
+            addToast?.('Task created', 'success');
+        } catch {
+            addToast?.('Failed to create task', 'error');
+        }
     };
 
-    const updateTaskStatus = (taskId, newStatus) => {
-        const updatedTasks = tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t);
-        const updated = { ...project, tasks: updatedTasks, activity: [{ text: `Task "${tasks.find(t => t.id === taskId)?.title}" moved to ${statusLabels[newStatus]}`, time: new Date().toISOString() }, ...project.activity] };
-        updated.progress = Math.round((updated.tasks.filter(t => t.status === 'done').length / updated.tasks.length) * 100);
-        onUpdate(updated);
-        addToast?.(`Task moved to ${statusLabels[newStatus]}`, 'success');
+    const updateTaskStatus = async (taskId, newStatus) => {
+        try {
+            const updated = await updateProjectTask(project.id, taskId, { status: newStatus });
+            onUpdate(updated);
+            addToast?.(`Task moved to ${statusLabels[newStatus]}`, 'success');
+        } catch {
+            addToast?.('Failed to update task', 'error');
+        }
     };
 
-    const deleteTask = (taskId) => {
-        const updatedTasks = tasks.filter(t => t.id !== taskId);
-        const updated = { ...project, tasks: updatedTasks };
-        updated.progress = updatedTasks.length ? Math.round((updatedTasks.filter(t => t.status === 'done').length / updatedTasks.length) * 100) : 0;
-        onUpdate(updated);
-        addToast?.('Task deleted', 'success');
+    const deleteTask = async (taskId) => {
+        try {
+            const updated = await deleteProjectTask(project.id, taskId);
+            onUpdate(updated);
+            addToast?.('Task deleted', 'success');
+        } catch {
+            addToast?.('Failed to delete task', 'error');
+        }
     };
 
     const handleInvite = () => {
@@ -313,11 +323,15 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast }) {
         setShowInvite(false);
     };
 
-    const removeMember = (memberId) => {
+    const removeMember = async (memberId) => {
         if (!isOwner || memberId === 'u0') return;
-        const updated = { ...project, members: project.members.filter(m => m.id !== memberId) };
-        onUpdate(updated);
-        addToast?.('Member removed', 'success');
+        try {
+            const updated = await removeProjectMember(project.id, memberId);
+            onUpdate(updated);
+            addToast?.('Member removed', 'success');
+        } catch {
+            addToast?.('Failed to remove member', 'error');
+        }
     };
 
     return (
@@ -457,7 +471,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast }) {
                                     </div>
                                     <div className="proj-kanban-body">
                                         {col.map(task => (
-                                            <TaskCard key={task.id} task={task} onStatusChange={updateTaskStatus} onDelete={deleteTask} isOwner={isOwner} />
+                                            <TaskCard key={task.id} task={task} onStatusChange={updateTaskStatus} onDelete={deleteTask} isOwner={isOwner} users={users} />
                                         ))}
                                         {col.length === 0 && <div className="proj-kanban-empty">No tasks</div>}
                                     </div>
@@ -578,7 +592,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast }) {
 }
 
 /* ═══ Task Card for Kanban ═══ */
-function TaskCard({ task, onStatusChange, onDelete, isOwner }) {
+function TaskCard({ task, onStatusChange, onDelete, isOwner, users }) {
     const [showMenu, setShowMenu] = useState(false);
     const u = users.find(u => u.id === task.assignee);
     const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'done';

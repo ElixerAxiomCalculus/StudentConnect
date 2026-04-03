@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import QuickAccessToolbar from './components/QuickAccessToolbar';
+import HelpBot from './components/HelpBot';
 import { ToastProvider } from './components/Toast';
 import AnimatedPage from './components/AnimatedPage';
 import './dashboard.css';
@@ -41,7 +42,7 @@ export default function DashboardLayout() {
             <div className="dashboard-shell">
                 <Sidebar />
                 <main className="main-panel">
-                    <div className="main-content frost-panel">
+                    <div className="main-content frost-panel" style={{ paddingBottom: '110px' }}>
                         <Suspense fallback={<PageLoader />}>
                             <AnimatePresence mode="wait">
                                 <Routes location={location} key={location.pathname}>
@@ -59,6 +60,7 @@ export default function DashboardLayout() {
                     <QuickAccessToolbar />
                 </main>
             </div>
+            <HelpBot />
         </ToastProvider>
     );
 }

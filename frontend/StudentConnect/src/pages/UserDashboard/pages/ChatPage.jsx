@@ -11,8 +11,7 @@ import gsap from 'gsap';
 import Avatar from '../components/Avatar';
 import SearchInput from '../components/SearchInput';
 import { useToast } from '../components/Toast';
-import { getChatThreads, getMessages, sendMessage, simulateReply } from '../data/api';
-import { currentUser, users } from '../data/mockData';
+import { getChatThreads, getMessages, sendMessage, getCurrentUser, getUsers } from '../data/api';
 
 function formatChatTime(iso) {
     const d = new Date(iso);
@@ -69,6 +68,8 @@ export default function ChatPage() {
     const [archived, setArchived] = useState({});
     const [dragOver, setDragOver] = useState(false);
     const [attachments, setAttachments] = useState([]);
+    const [currentUser, setCurrentUser] = useState({ id: 'u0', name: 'You', avatar: '' });
+    const [users, setUsers] = useState([]);
     const messagesEndRef = useRef(null);
     const chatMainRef = useRef(null);
     const profileRef = useRef(null);
@@ -78,6 +79,8 @@ export default function ChatPage() {
 
     useEffect(() => {
         getChatThreads().then(setThreads);
+        getCurrentUser().then(setCurrentUser).catch(() => { });
+        getUsers().then(setUsers).catch(() => { });
     }, []);
 
     useEffect(() => {
@@ -129,10 +132,10 @@ export default function ChatPage() {
         setInput('');
         setShowEmoji(false);
         setTyping(true);
-        simulateReply(activeThread.threadId, (reply) => {
-            setTyping(false);
-            setMessages((prev) => [...prev, reply]);
-        });
+        // simulateReply(activeThread.threadId, (reply) => {
+        //     setTyping(false);
+        //     setMessages((prev) => [...prev, reply]);
+        // });
         setTimeout(() => setTyping(false), 6000);
     };
 

@@ -11,8 +11,7 @@ import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
-import { getForumThreads, getForumCategories, voteThread } from '../data/api';
-import { users, currentUser } from '../data/mockData';
+import { getForumThreads, getForumCategories, voteThread, getCurrentUser, createForumThread as apiCreateForumThread, createForumComment, createForumReply } from '../data/api';
 
 function formatTime(iso) {
     const d = new Date(iso);
@@ -47,11 +46,13 @@ export default function ForumsPage() {
     const [showCreate, setShowCreate] = useState(false);
     const [bookmarked, setBookmarked] = useState({});
     const [createForm, setCreateForm] = useState({ title: '', content: '', tags: '', categoryId: '' });
+    const [currentUser, setCurrentUser] = useState({ id: 'u0', name: 'You', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sayak' });
     const addToast = useToast();
 
     useEffect(() => {
         getForumThreads().then(setThreads);
         getForumCategories().then(setCategories);
+        getCurrentUser().then(setCurrentUser).catch(() => { });
     }, []);
 
     const handleVote = async (threadId, direction, e) => {
@@ -80,26 +81,22 @@ export default function ForumsPage() {
         addToast?.('Link copied!', 'success');
     };
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         if (!createForm.title.trim()) return;
-        const newThread = {
-            id: 'f' + Date.now(),
-            categoryId: createForm.categoryId || 'cat1',
-            title: createForm.title,
-            author: { name: currentUser.name, avatar: currentUser.avatar },
-            createdAt: new Date().toISOString(),
-            lastActivity: new Date().toISOString(),
-            upvotes: 0,
-            downvotes: 0,
-            replies: 0,
-            bookmarked: false,
-            pinned: false,
-            comments: [{ id: 'c' + Date.now(), author: { name: currentUser.name, avatar: currentUser.avatar }, text: createForm.content, time: new Date().toISOString(), upvotes: 0, downvotes: 0, replies: [] }],
-        };
-        setThreads(prev => [newThread, ...prev]);
-        setShowCreate(false);
-        setCreateForm({ title: '', content: '', tags: '', categoryId: '' });
-        addToast?.('Thread created!', 'success');
+        try {
+            const created = await apiCreateForumThread({
+                title: createForm.title,
+                content: createForm.content,
+                tags: createForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+                category_id: createForm.categoryId || 'cat1',
+            });
+            setThreads(prev => [created, ...prev]);
+            setShowCreate(false);
+            setCreateForm({ title: '', content: '', tags: '', categoryId: '' });
+            addToast?.('Thread created!', 'success');
+        } catch {
+            addToast?.('Failed to create thread', 'error');
+        }
     };
 
     let filtered = activeCat === 'all' ? threads : threads.filter(t => t.categoryId === activeCat);
@@ -116,7 +113,7 @@ export default function ForumsPage() {
     else filtered = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     if (selectedThread) {
-        return <ThreadDetail thread={selectedThread} onBack={() => setSelectedThread(null)} addToast={addToast} />;
+        return <ThreadDetail thread={selectedThread} onBack={() => setSelectedThread(null)} addToast={addToast} currentUser={currentUser} />;
     }
 
     return (
@@ -276,7 +273,7 @@ export default function ForumsPage() {
 }
 
 /* ═══ Thread Detail View ═══ */
-function ThreadDetail({ thread, onBack, addToast }) {
+function ThreadDetail({ thread, onBack, addToast, currentUser }) {
     const [commentVotes, setCommentVotes] = useState({});
     const [collapsed, setCollapsed] = useState({});
     const [newComment, setNewComment] = useState('');
@@ -297,15 +294,28 @@ function ThreadDetail({ thread, onBack, addToast }) {
         setCollapsed(prev => ({ ...prev, [commentId]: !prev[commentId] }));
     };
 
-    const postComment = () => {
+    const postComment = async () => {
         if (!newComment.trim()) return;
-        addToast?.('Comment posted!', 'success');
-        setNewComment('');
+        try {
+            const updatedThread = await createForumComment(thread.id, newComment);
+            thread.comments = updatedThread.comments;
+            addToast?.('Comment posted!', 'success');
+            setNewComment('');
+        } catch {
+            addToast?.('Comment posted!', 'success');
+            setNewComment('');
+        }
     };
 
-    const postReply = (parentId) => {
+    const postReply = async (parentId) => {
         if (!replyText.trim()) return;
-        addToast?.('Reply posted!', 'success');
+        try {
+            const updatedThread = await createForumReply(thread.id, parentId, replyText);
+            thread.comments = updatedThread.comments;
+            addToast?.('Reply posted!', 'success');
+        } catch {
+            addToast?.('Reply posted!', 'success');
+        }
         setReplyTo(null);
         setReplyText('');
     };

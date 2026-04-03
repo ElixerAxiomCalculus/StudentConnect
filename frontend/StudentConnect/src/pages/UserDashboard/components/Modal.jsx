@@ -1,30 +1,31 @@
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, children, footer }) {
     const modalRef = useRef(null);
 
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            modalRef.current?.focus();
-        } else {
-            document.body.style.overflow = '';
-        }
+        // isOpen===false means controlled-closed; undefined means uncontrolled (parent handles it)
+        if (isOpen === false) return;
+        document.body.style.overflow = 'hidden';
+        modalRef.current?.focus();
         return () => { document.body.style.overflow = ''; };
     }, [isOpen]);
 
     useEffect(() => {
         const handleEsc = (e) => {
-            if (e.key === 'Escape' && isOpen) onClose();
+            if (e.key === 'Escape') onClose();
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
-    }, [isOpen, onClose]);
+    }, [onClose]);
 
-    if (!isOpen) return null;
+    // Early return AFTER all hooks — supports both controlled (isOpen prop) and
+    // uncontrolled (parent conditionally renders the component) usage patterns.
+    if (isOpen === false) return null;
 
-    return (
+    return ReactDOM.createPortal(
         <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
             <div
                 className="modal"
@@ -43,6 +44,7 @@ export default function Modal({ isOpen, onClose, title, children, footer }) {
                 </div>
                 {footer && <div className="modal-footer">{footer}</div>}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

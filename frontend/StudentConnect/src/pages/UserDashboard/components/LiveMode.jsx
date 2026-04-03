@@ -2,15 +2,16 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Zap, MessageCircle, RotateCcw, Sparkles } from 'lucide-react';
 import Avatar from './Avatar';
-import { users } from '../data/mockData';
 
 const matchProfiles = [
-    { id: 'mp1', name: 'Ananya S', year: '3rd Year', major: 'Computer Science', tags: ['AI', 'Python', 'Research'], bio: 'Passionate about deep learning and NLP. Looking for research collaborators!', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya', interest: 92 },
-    { id: 'mp2', name: 'Rohan M', year: '2nd Year', major: 'Electrical Engineering', tags: ['IoT', 'Robotics', 'Arduino'], bio: 'Building smart campus solutions. Love hackathons and late-night coding sessions.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan', interest: 85 },
-    { id: 'mp3', name: 'Kavya P', year: '4th Year', major: 'Data Science', tags: ['ML', 'Statistics', 'Kaggle'], bio: 'Kaggle expert. Interested in real-world ML applications and data storytelling.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kavya', interest: 88 },
-    { id: 'mp4', name: 'Arjun D', year: '1st Year', major: 'Mathematics', tags: ['Coding', 'Debate', 'Philosophy'], bio: 'Math nerd who also loves debate club. Always up for intellectual conversations.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun', interest: 79 },
-    { id: 'mp5', name: 'Meera K', year: '3rd Year', major: 'Design', tags: ['UI/UX', 'Figma', 'Web Dev'], bio: 'Designer who codes. Obsessed with beautiful interfaces and micro-interactions.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Meera', interest: 94 },
-    { id: 'mp6', name: 'Vikash R', year: '2nd Year', major: 'Physics', tags: ['Quantum', 'Simulation', 'MATLAB'], bio: 'Exploring quantum computing one qubit at a time. Looking for study partners.', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikash', interest: 81 },
+    { id: 'mp1', name: 'Ananya S', year: '3rd Year', major: 'Computer Science', tags: ['AI', 'Python', 'Research'], bio: 'Passionate about deep learning and NLP. Looking for research collaborators!', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Ananya', interest: 92 },
+    { id: 'mp2', name: 'Rohan M', year: '2nd Year', major: 'Electrical Engineering', tags: ['IoT', 'Robotics', 'Arduino'], bio: 'Building smart campus solutions. Love hackathons and late-night coding sessions.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Rohan', interest: 85 },
+    { id: 'mp3', name: 'Kavya P', year: '4th Year', major: 'Data Science', tags: ['ML', 'Statistics', 'Kaggle'], bio: 'Kaggle expert. Interested in real-world ML applications and data storytelling.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Kavya', interest: 88 },
+    { id: 'mp4', name: 'Arjun D', year: '1st Year', major: 'Mathematics', tags: ['Coding', 'Debate', 'Philosophy'], bio: 'Math nerd who also loves debate club. Always up for intellectual conversations.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Arjun', interest: 79 },
+    { id: 'mp5', name: 'Meera K', year: '3rd Year', major: 'Design', tags: ['UI/UX', 'Figma', 'Web Dev'], bio: 'Designer who codes. Obsessed with beautiful interfaces and micro-interactions.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Meera', interest: 94 },
+    { id: 'mp6', name: 'Vikash R', year: '2nd Year', major: 'Physics', tags: ['Quantum', 'Simulation', 'MATLAB'], bio: 'Exploring quantum computing one qubit at a time. Looking for study partners.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Vikash', interest: 81 },
+    { id: 'mp7', name: 'Shreya T', year: '2nd Year', major: 'Biotechnology', tags: ['Genomics', 'Lab', 'Python'], bio: 'Combining biology and data science to solve real-world health problems.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Shreya', interest: 76 },
+    { id: 'mp8', name: 'Dev P', year: '3rd Year', major: 'Civil Engineering', tags: ['Sustainability', 'CAD', 'Urban'], bio: 'Designing smart cities of tomorrow. Looking for creative minds to collaborate.', avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Dev', interest: 83 },
 ];
 
 export default function LiveMode({ onClose }) {
@@ -128,6 +129,9 @@ export default function LiveMode({ onClose }) {
                 <div className="live-header-icon"><Zap size={22} /></div>
                 <h2 className="live-title">Live Match Mode</h2>
                 <p className="live-subtitle">Discover and connect with students instantly</p>
+                {currentIndex < deck.length && (
+                    <p className="live-counter">{currentIndex + 1} / {deck.length}</p>
+                )}
             </div>
 
             {/* Card Stack */}
@@ -243,7 +247,7 @@ export default function LiveMode({ onClose }) {
                             <div className="live-match-avatars">
                                 <motion.img
                                     initial={{ x: -100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1, type: "spring" }}
-                                    src={users[0]?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Me'} alt="You" className="live-match-avatar"
+                                    src={'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Me'} alt="You" className="live-match-avatar"
                                 />
                                 <motion.div
                                     initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}

@@ -1,16 +1,15 @@
 import React from 'react';
 import { LogOut, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function LogOutPage() {
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     const handleLogout = () => {
-        // Clear local state
-        localStorage.clear();
-        sessionStorage.clear();
-        // Redirect to landing page
-        navigate('/');
+        logout();
+        navigate('/auth');
     };
 
     return (

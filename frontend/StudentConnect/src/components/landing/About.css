@@ -1,62 +1,161 @@
-.about-section {
-  padding: 80px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.about-subtitle {
-  color: #4A5568;
-  font-size: 18px;
-  margin-bottom: 40px;
-}
-
-.team-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-  max-width: 1000px;
-}
-
-.team-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 180px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 24px 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transition: transform 0.2s ease;
-}
-
-.team-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.team-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 16px;
-  border: 2px solid #FF5A5F;
-}
-
-.team-name {
-  font-size: 16px;
-  color: #1A2B4C;
+.about-header {
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.team-role {
-  font-size: 13px;
-  color: #FF5A5F;
-  font-weight: 600;
+/* Ensure About section header text is visible against coloured background */
+.about-header .section-heading {
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.about-header .section-copy {
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.about-header .section-eyebrow {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.about-header .section-eyebrow::before {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+.about-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+/* ── Steps ── */
+.steps-list {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+  padding: 0 24px;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.step-desc {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.step-connector {
+  display: none;
+}
+
+/* ── Stats ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 28px 20px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.stat-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  color: var(--lp-red, #d44332);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #1a1a2e;
+  letter-spacing: -0.04em;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: #555566;
+  font-weight: 500;
+}
+
+@media (max-width: 960px) {
+  .steps-list {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .step-item {
+    padding: 0;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
 }

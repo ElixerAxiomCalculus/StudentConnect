@@ -1,78 +1,329 @@
 .hero-section {
-  min-height: 100vh;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 120px 20px 60px; 
-  width: 100%;
+  gap: 60px;
+  min-height: 100vh;
+  padding: 140px 0 80px;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+  z-index: 2;
+  /* above 3D canvas */
+}
+
+/* ── Doodles ── */
+.doodle-wrapper {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.doodle-pos-1 {
+  top: 15%;
+  left: 45%;
+  width: 100px;
+}
+
+.doodle-pos-2 {
+  top: 60%;
+  left: -5%;
+  width: 50px;
+}
+
+.doodle-pos-3 {
+  bottom: 10%;
+  right: 45%;
+  width: 120px;
+}
+
+.doodle path {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 
 .hero-content {
-  max-width: 800px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 60px 40px;
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(212, 67, 50, 0.08);
+  color: #d44332;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+  backdrop-filter: blur(5px);
 }
 
 .hero-title {
-  font-size: 56px;
-  color: #1A2B4C; 
-  margin-bottom: 24px;
-  line-height: 1.2;
+  margin: 0 0 20px;
 }
 
-.text-highlight {
-  color: #FF5A5F; 
+.hero-title-line {
+  display: block;
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  color: #1a1a2e;
+}
+
+.hero-title .accent {
+  color: #d44332;
+}
+
+.hero-title .accent-blue {
+  color: #3d5999;
 }
 
 .hero-subtitle {
-  font-size: 20px;
-  color: #4A5568;
-  margin-bottom: 40px;
-  line-height: 1.6;
+  max-width: 500px;
+  color: #7a7a8e;
+  font-size: 1.12rem;
+  line-height: 1.7;
+  margin: 0 0 32px;
 }
 
 .hero-buttons {
   display: flex;
-  gap: 20px;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+/* Stats strip */
+.hero-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-stat strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  letter-spacing: -0.02em;
+}
+
+.hero-stat span {
+  font-size: 0.78rem;
+  color: #7a7a8e;
+  font-weight: 500;
+}
+
+/* Visual side - Video Showcase */
+.hero-visual {
+  flex: 1;
+  position: relative;
+  display: flex;
   justify-content: center;
+  perspective: 1200px;
 }
 
-.primary-btn {
-  background-color: #FF5A5F;
-  color: white;
-  border: none;
-  padding: 16px 36px;
-  border-radius: 100px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+.hero-visual-container {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-radius: 24px;
+  /* Reduced from 8deg/4deg — large 3D angles cause subpixel blur on video textures */
+  transform: rotateY(-3deg) rotateX(1.5deg);
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* GPU-composite the whole container so video renders on dedicated layer */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow:
+    -16px 24px 56px rgba(0, 0, 0, 0.14),
+    -4px 6px 16px rgba(212, 67, 50, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset !important;
 }
 
-.primary-btn:hover {
-  transform: translateY(-3px);
-  background-color: #e0484d;
+.hero-visual-container:hover {
+  transform: rotateY(-1deg) rotateX(0.5deg);
 }
 
-.secondary-btn {
-  background-color: transparent;
-  color: #1A2B4C;
-  border: 2px solid #1A2B4C;
-  padding: 16px 36px;
-  border-radius: 100px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.browser-mockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(246, 246, 248, 0.96);
+  border-radius: 14px 14px 0 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  /* Ensure browser bar is on its own compositing layer */
+  transform: translateZ(0);
 }
 
-.secondary-btn:hover {
-  background-color: #1A2B4C;
-  color: white;
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.browser-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f56;
+}
+
+.browser-dots span:nth-child(2) {
+  background: #ffbd2e;
+}
+
+.browser-dots span:nth-child(3) {
+  background: #27c93f;
+}
+
+.browser-url {
+  background: rgba(0, 0, 0, 0.04);
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
+  padding: 6px;
+  border-radius: 8px;
+  letter-spacing: 0.05em;
+}
+
+.hero-video-wrap {
+  position: relative;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  background: #0a0a14;
+  /* Force this element onto its own GPU layer so the video renders
+     at full resolution independently of the parent's 3D transform */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+}
+
+.hero-video {
+  width: 100%;
+  display: block;
+  border-radius: 0;
+  object-fit: contain;
+  object-position: center center;
+  aspect-ratio: 16/10;
+  /* GPU compositing on the video element itself */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Sharpness/clarity enhancement: boost contrast and saturation
+     to compensate for rotation-plane softness */
+  filter: contrast(1.12) saturate(1.15) brightness(1.03);
+  -webkit-filter: contrast(1.12) saturate(1.15) brightness(1.03);
+}
+
+/* Subtle vignette overlay to crisp up the edges and
+   mask any compression / blurriness at the borders */
+.hero-video-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  pointer-events: none;
+  border-radius: 0 0 14px 14px;
+}
+
+/* Thin colored reflection line at the top of the video — draws
+   the eye to content, making perceived quality feel higher */
+.hero-video-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d44332 0%, #3b5999 50%, #0080b2 100%);
+  opacity: 0.6;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Floating badges */
+.hero-floating-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.badge-icon {
+  font-size: 1.2rem;
+}
+
+.badge-1 {
+  top: 15%;
+  right: -30px;
+}
+
+.badge-2 {
+  bottom: 15%;
+  left: -40px;
+}
+
+@media (max-width: 960px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 60px;
+    padding-top: 130px;
+    min-height: auto;
+  }
+
+  .hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-buttons,
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .hero-visual-container {
+    transform: none;
+    max-width: 100%;
+  }
+
+  .hero-visual-container:hover {
+    transform: none;
+  }
+
+  .doodle-pos-1 {
+    left: 80%;
+  }
+
+  .doodle-pos-3 {
+    display: none;
+  }
 }

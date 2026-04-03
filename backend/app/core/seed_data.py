@@ -1,0 +1,552 @@
+from __future__ import annotations
+
+from copy import deepcopy
+
+from app.services.scoring_services import compute_interest_vector, compute_personality_vector
+
+
+NOTIFICATION_SETTINGS = {
+    'email': {'messages': True, 'projects': True, 'forums': False, 'matches': True},
+    'push': {'messages': True, 'projects': False, 'forums': False, 'matches': False},
+    'inApp': {'messages': True, 'projects': True, 'forums': True, 'matches': True},
+}
+
+PRIVACY_SETTINGS = {
+    'profile_visible': True,
+    'allow_messages_from_anyone': True,
+    'allow_project_invites': True,
+}
+
+ACCESSIBILITY_SETTINGS = {
+    'reduced_motion': False,
+    'high_contrast': False,
+    'text_scale': 100,
+}
+
+
+def build_user(
+    user_id: str,
+    name: str,
+    email: str,
+    major: str,
+    year: int,
+    semester: int,
+    avatar: str,
+    bio: str,
+    interests: list[str],
+    personality_answers: list[int],
+    interest_answers: list[int],
+    online: bool,
+    dashboard: dict | None = None,
+) -> dict:
+    return {
+        '_id': user_id,
+        'name': name,
+        'email': email,
+        'major': major,
+        'year': year,
+        'semester': semester,
+        'avatar': avatar,
+        'bio': bio,
+        'online': online,
+        'interests': interests,
+        'personality_answers': personality_answers,
+        'interest_answers': interest_answers,
+        'personality_vector': compute_personality_vector(personality_answers),
+        'interest_vector': compute_interest_vector(interest_answers),
+        'settings': {
+            'notifications': deepcopy(NOTIFICATION_SETTINGS),
+            'privacy': deepcopy(PRIVACY_SETTINGS),
+            'accessibility': deepcopy(ACCESSIBILITY_SETTINGS),
+        },
+        'dashboard': dashboard or {'recent_activity': [], 'analytics': {}},
+    }
+
+
+USERS = [
+    build_user(
+        'u0',
+        'Sayak M',
+        'sayak@studentconnect.edu',
+        'Computer Science',
+        3,
+        5,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Sayak',
+        'Full-stack developer and open-source enthusiast',
+        ['Web Development', 'Machine Learning', 'UI/UX Design'],
+        [5, 4, 4, 3, 5, 5, 4, 4, 4, 3, 5, 4, 4, 4, 3, 4, 5, 4, 4, 5],
+        [5, 5, 5, 4, 2, 3, 4, 4, 5, 4, 4, 3, 3, 4, 2, 4],
+        True,
+        {
+            'recent_activity': [
+                {'id': 'a1', 'type': 'message', 'text': 'Priya sent you a message', 'time': '2026-02-27T12:40:00Z', 'icon': 'message'},
+                {'id': 'a2', 'type': 'project', 'text': 'You were added to Project: Optical Lab', 'time': '2026-02-26T09:22:00Z', 'icon': 'folder'},
+                {'id': 'a3', 'type': 'forum', 'text': 'Sara upvoted your comment in "ML Study Group"', 'time': '2026-02-25T18:15:00Z', 'icon': 'thumbs-up'},
+                {'id': 'a4', 'type': 'project', 'text': 'Deadline approaching: Physics Report due Feb 28', 'time': '2026-02-25T08:00:00Z', 'icon': 'clock'},
+                {'id': 'a5', 'type': 'match', 'text': 'New match! Vikram shares 3 interests with you', 'time': '2026-02-24T14:30:00Z', 'icon': 'users'},
+                {'id': 'a6', 'type': 'message', 'text': 'Rohan invited you to collaborate', 'time': '2026-02-24T10:05:00Z', 'icon': 'user-plus'},
+            ],
+            'analytics': {
+                'weeklyPostData': [28, 42, 35, 58, 47, 63, 52],
+                'weekLabels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                'monthlyFollowers': [120, 135, 128, 142, 155, 168, 180, 195, 210, 225, 240, 262],
+                'monthLabels': ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'],
+                'engagementBreakdown': [
+                    {'label': 'Posts', 'value': 42, 'color': '#d44332'},
+                    {'label': 'Comments', 'value': 128, 'color': '#3b5999'},
+                    {'label': 'Reactions', 'value': 315, 'color': '#00aced'},
+                    {'label': 'Views', 'value': 2847, 'color': '#f59e0b'},
+                ],
+                'streakData': {'current': 14, 'best': 23, 'total': 187},
+                'topSkills': [
+                    {'name': 'React', 'level': 92},
+                    {'name': 'Python', 'level': 85},
+                    {'name': 'Machine Learning', 'level': 73},
+                    {'name': 'UI/UX Design', 'level': 68},
+                    {'name': 'Node.js', 'level': 80},
+                ],
+                'upcomingEvents': [
+                    {'id': 'e1', 'title': 'ML Study Group', 'time': 'Today, 6:00 PM', 'type': 'study'},
+                    {'id': 'e2', 'title': 'Physics Report Due', 'time': 'Feb 28, 11:59 PM', 'type': 'deadline'},
+                    {'id': 'e3', 'title': 'Hackathon Kickoff', 'time': 'Mar 2, 10:00 AM', 'type': 'event'},
+                    {'id': 'e4', 'title': 'DSA Practice', 'time': 'Mar 1, 2:00 PM', 'type': 'study'},
+                ],
+            },
+        },
+    ),
+    build_user(
+        'u1',
+        'Priya R',
+        'priya@studentconnect.edu',
+        'Computer Science',
+        2,
+        4,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+        'Machine learning enthusiast',
+        ['Machine Learning', 'Python', 'Study Groups'],
+        [4, 4, 5, 3, 4, 4, 5, 3, 3, 4, 4, 5, 4, 3, 4, 4, 5, 4, 4, 4],
+        [5, 4, 4, 5, 2, 2, 3, 4, 5, 5, 3, 3, 4, 4, 2, 3],
+        True,
+    ),
+    build_user(
+        'u2',
+        'Amit K',
+        'amit@studentconnect.edu',
+        'Electrical Engineering',
+        3,
+        5,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit',
+        'Circuit design and embedded systems',
+        ['IoT', 'Robotics', 'Embedded Systems'],
+        [3, 4, 4, 3, 4, 3, 4, 4, 3, 4, 3, 4, 4, 4, 4, 3, 3, 4, 4, 4],
+        [5, 3, 4, 3, 5, 4, 2, 3, 3, 3, 2, 2, 4, 5, 4, 4],
+        False,
+    ),
+    build_user(
+        'u3',
+        'Sara L',
+        'sara@studentconnect.edu',
+        'Data Science',
+        2,
+        4,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Sara',
+        'Data visualization and analytics',
+        ['Data Visualization', 'Analytics', 'Machine Learning'],
+        [4, 5, 4, 4, 5, 4, 4, 5, 3, 4, 4, 4, 4, 4, 5, 4, 4, 3, 4, 5],
+        [4, 5, 5, 4, 1, 2, 3, 4, 4, 5, 2, 2, 4, 3, 2, 3],
+        True,
+    ),
+    build_user(
+        'u4',
+        'Rohan D',
+        'rohan@studentconnect.edu',
+        'Mechanical Engineering',
+        4,
+        7,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan',
+        'Robotics and automation projects',
+        ['Robotics', 'Hardware', 'Automation'],
+        [3, 3, 4, 4, 4, 4, 3, 3, 3, 4, 4, 4, 3, 4, 3, 3, 4, 4, 4, 3],
+        [4, 3, 3, 2, 5, 4, 2, 3, 3, 3, 2, 2, 5, 5, 4, 4],
+        False,
+    ),
+    build_user(
+        'u5',
+        'Neha S',
+        'neha@studentconnect.edu',
+        'Physics',
+        3,
+        5,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Neha',
+        'Quantum computing researcher',
+        ['Quantum Computing', 'Research', 'Study Groups'],
+        [5, 4, 3, 4, 5, 4, 4, 4, 4, 3, 4, 5, 4, 4, 3, 5, 5, 4, 4, 5],
+        [4, 5, 5, 4, 2, 3, 2, 2, 4, 4, 2, 2, 4, 5, 3, 3],
+        True,
+    ),
+    build_user(
+        'u6',
+        'Vikram P',
+        'vikram@studentconnect.edu',
+        'Computer Science',
+        2,
+        3,
+        'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
+        'Backend developer, loves Go and Rust',
+        ['Backend Development', 'Systems', 'Open Source'],
+        [4, 4, 4, 4, 3, 4, 4, 4, 4, 3, 3, 4, 4, 4, 4, 3, 4, 4, 4, 4],
+        [5, 4, 4, 4, 2, 2, 3, 3, 4, 3, 4, 5, 3, 4, 2, 3],
+        False,
+    ),
+]
+
+CONNECTIONS = [
+    {'_id': 'conn1', 'user_ids': ['u0', 'u1'], 'status': 'accepted', 'initiated_by': 'u0', 'updated_at': '2026-02-20T10:00:00Z'},
+    {'_id': 'conn2', 'user_ids': ['u0', 'u2'], 'status': 'accepted', 'initiated_by': 'u2', 'updated_at': '2026-02-21T10:00:00Z'},
+    {'_id': 'conn3', 'user_ids': ['u0', 'u5'], 'status': 'accepted', 'initiated_by': 'u5', 'updated_at': '2026-02-22T10:00:00Z'},
+    {'_id': 'conn4', 'user_ids': ['u0', 'u6'], 'status': 'accepted', 'initiated_by': 'u0', 'updated_at': '2026-02-23T10:00:00Z'},
+    {'_id': 'conn5', 'user_ids': ['u4', 'u0'], 'status': 'pending', 'initiated_by': 'u4', 'updated_at': '2026-02-24T09:00:00Z'},
+    {'_id': 'conn6', 'user_ids': ['u3', 'u0'], 'status': 'pending', 'initiated_by': 'u3', 'updated_at': '2026-02-25T09:00:00Z'},
+]
+
+CHAT_THREADS = [
+    {
+        '_id': 't1',
+        'type': 'personal',
+        'participant_ids': ['u0', 'u1'],
+        'title': '',
+        'avatar': '',
+        'unread_counts': {'u0': 1, 'u1': 0},
+        'pinned_by': [],
+        'muted_by': [],
+        'archived_by': [],
+        'last_message_preview': 'See you at 6!',
+        'last_message_at': '2026-02-27T12:40:00Z',
+    },
+    {
+        '_id': 't2',
+        'type': 'project',
+        'participant_ids': ['u0', 'u2', 'u5'],
+        'project_id': 'p1',
+        'title': 'Group: Physics Lab',
+        'avatar': 'https://api.dicebear.com/7.x/avataaars/svg?seed=PhysicsLab',
+        'unread_counts': {'u0': 0, 'u2': 0, 'u5': 0},
+        'pinned_by': [],
+        'muted_by': [],
+        'archived_by': [],
+        'last_message_preview': 'Files updated - check the shared folder',
+        'last_message_at': '2026-02-25T10:10:00Z',
+    },
+    {
+        '_id': 't3',
+        'type': 'personal',
+        'participant_ids': ['u0', 'u2'],
+        'title': '',
+        'avatar': '',
+        'unread_counts': {'u0': 3, 'u2': 0},
+        'pinned_by': [],
+        'muted_by': [],
+        'archived_by': [],
+        'last_message_preview': 'Can you review my PR?',
+        'last_message_at': '2026-02-26T15:30:00Z',
+    },
+    {
+        '_id': 't4',
+        'type': 'request',
+        'participant_ids': ['u0', 'u4'],
+        'title': '',
+        'avatar': '',
+        'unread_counts': {'u0': 1, 'u4': 0},
+        'pinned_by': [],
+        'muted_by': [],
+        'archived_by': [],
+        'last_message_preview': 'Friend request',
+        'last_message_at': '2026-02-27T09:00:00Z',
+    },
+]
+
+CHAT_MESSAGES = [
+    {'_id': 'm1', 'thread_id': 't1', 'sender_id': 'u1', 'text': 'Hey! Are we meeting for the study group today?', 'time': '2026-02-27T12:30:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm2', 'thread_id': 't1', 'sender_id': 'u0', 'text': 'Yes! Library at 6pm works for me.', 'time': '2026-02-27T12:35:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm3', 'thread_id': 't1', 'sender_id': 'u1', 'text': 'See you at 6!', 'time': '2026-02-27T12:40:00Z', 'status': 'delivered', 'attachments': [], 'edited': False},
+    {'_id': 'm4', 'thread_id': 't2', 'sender_id': 'u5', 'text': 'I uploaded the lab report draft.', 'time': '2026-02-25T09:50:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm5', 'thread_id': 't2', 'sender_id': 'u2', 'text': "Great, I'll review it tonight.", 'time': '2026-02-25T10:00:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm6', 'thread_id': 't2', 'sender_id': 'u0', 'text': "Thanks Neha! I'll add the graphs section.", 'time': '2026-02-25T10:05:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm7', 'thread_id': 't2', 'sender_id': 'u5', 'text': 'Files updated - check the shared folder', 'time': '2026-02-25T10:10:00Z', 'status': 'delivered', 'attachments': [], 'edited': False},
+    {'_id': 'm8', 'thread_id': 't3', 'sender_id': 'u2', 'text': 'Hey, I pushed a new branch for the sensor module.', 'time': '2026-02-26T14:00:00Z', 'status': 'seen', 'attachments': [], 'edited': False},
+    {'_id': 'm9', 'thread_id': 't3', 'sender_id': 'u2', 'text': 'Can you review my PR?', 'time': '2026-02-26T15:30:00Z', 'status': 'delivered', 'attachments': [], 'edited': False},
+]
+
+FORUM_CATEGORIES = [
+    {'_id': 'cat1', 'name': 'General Discussion', 'icon': 'message-circle'},
+    {'_id': 'cat2', 'name': 'Study Groups', 'icon': 'book-open'},
+    {'_id': 'cat3', 'name': 'Project Showcase', 'icon': 'award'},
+    {'_id': 'cat4', 'name': 'Help & Support', 'icon': 'help-circle'},
+]
+
+FORUM_THREADS = [
+    {
+        '_id': 'f1',
+        'category_id': 'cat1',
+        'title': 'Best resources for learning React in 2026?',
+        'body': 'I found the new React docs really helpful, especially the interactive tutorials.',
+        'tags': ['React', 'Web Dev', 'Discussion'],
+        'author_id': 'u1',
+        'created_at': '2026-02-20T10:00:00Z',
+        'last_activity': '2026-02-27T14:22:00Z',
+        'upvotes': 34,
+        'downvotes': 2,
+        'vote_users': {},
+        'bookmarked_by': [],
+        'follower_ids': [],
+        'pinned': True,
+        'comments': [
+            {
+                'id': 'c1',
+                'author_id': 'u1',
+                'text': 'I found the new React docs really helpful, especially the interactive tutorials. Also recommend the "Thinking in React" section.',
+                'time': '2026-02-20T10:00:00Z',
+                'upvotes': 18,
+                'downvotes': 0,
+                'vote_users': {},
+                'replies': [
+                    {'id': 'c1r1', 'author_id': 'u3', 'text': "Agreed! The new docs are excellent. I also like Fireship's videos for quick overviews.", 'time': '2026-02-20T11:30:00Z', 'upvotes': 7, 'downvotes': 0, 'vote_users': {}},
+                ],
+            },
+            {
+                'id': 'c2',
+                'author_id': 'u5',
+                'text': "For state management, I'd suggest starting with useReducer before jumping to external libraries.",
+                'time': '2026-02-21T09:15:00Z',
+                'upvotes': 12,
+                'downvotes': 1,
+                'vote_users': {},
+                'replies': [],
+            },
+        ],
+    },
+    {
+        '_id': 'f2',
+        'category_id': 'cat2',
+        'title': "Looking for ML study partners - starting with Andrew Ng's course",
+        'body': "Starting Week 1 of the ML Specialization on Monday. Who's in?",
+        'tags': ['Machine Learning', 'Study Group'],
+        'author_id': 'u3',
+        'created_at': '2026-02-22T14:00:00Z',
+        'last_activity': '2026-02-26T18:00:00Z',
+        'upvotes': 21,
+        'downvotes': 0,
+        'vote_users': {},
+        'bookmarked_by': ['u0'],
+        'follower_ids': [],
+        'pinned': False,
+        'comments': [
+            {
+                'id': 'c3',
+                'author_id': 'u3',
+                'text': "Starting Week 1 of the ML Specialization on Monday. Who's in?",
+                'time': '2026-02-22T14:00:00Z',
+                'upvotes': 15,
+                'downvotes': 0,
+                'vote_users': {},
+                'replies': [
+                    {'id': 'c3r1', 'author_id': 'u0', 'text': "Count me in! I've been meaning to revisit the fundamentals.", 'time': '2026-02-22T15:00:00Z', 'upvotes': 4, 'downvotes': 0, 'vote_users': {}},
+                    {'id': 'c3r2', 'author_id': 'u6', 'text': "I'm interested too. Should we set up a shared repo?", 'time': '2026-02-22T16:00:00Z', 'upvotes': 6, 'downvotes': 0, 'vote_users': {}},
+                ],
+            },
+        ],
+    },
+    {
+        '_id': 'f3',
+        'category_id': 'cat3',
+        'title': 'Project Showcase: Real-time IoT Dashboard',
+        'body': 'Built a real-time dashboard for our EE lab sensors using WebSockets and D3.js. Check it out!',
+        'tags': ['IoT', 'WebSockets', 'Showcase'],
+        'author_id': 'u2',
+        'created_at': '2026-02-18T09:00:00Z',
+        'last_activity': '2026-02-25T12:00:00Z',
+        'upvotes': 45,
+        'downvotes': 3,
+        'vote_users': {},
+        'bookmarked_by': [],
+        'follower_ids': [],
+        'pinned': False,
+        'comments': [
+            {
+                'id': 'c4',
+                'author_id': 'u2',
+                'text': 'Built a real-time dashboard for our EE lab sensors using WebSockets and D3.js. Check it out!',
+                'time': '2026-02-18T09:00:00Z',
+                'upvotes': 28,
+                'downvotes': 1,
+                'vote_users': {},
+                'replies': [
+                    {'id': 'c4r1', 'author_id': 'u4', 'text': 'This is incredible! How do you handle the data throughput?', 'time': '2026-02-18T10:00:00Z', 'upvotes': 5, 'downvotes': 0, 'vote_users': {}},
+                ],
+            },
+        ],
+    },
+    {
+        '_id': 'f4',
+        'category_id': 'cat4',
+        'title': 'Help: Git merge conflict nightmare',
+        'body': 'I rebased onto main and now have 47 merge conflicts. Any tips for resolving them efficiently?',
+        'tags': ['Git', 'Help', 'DevOps'],
+        'author_id': 'u6',
+        'created_at': '2026-02-24T16:00:00Z',
+        'last_activity': '2026-02-27T10:00:00Z',
+        'upvotes': 8,
+        'downvotes': 0,
+        'vote_users': {},
+        'bookmarked_by': [],
+        'follower_ids': [],
+        'pinned': False,
+        'comments': [
+            {
+                'id': 'c5',
+                'author_id': 'u6',
+                'text': 'I rebased onto main and now have 47 merge conflicts. Any tips for resolving them efficiently?',
+                'time': '2026-02-24T16:00:00Z',
+                'upvotes': 5,
+                'downvotes': 0,
+                'vote_users': {},
+                'replies': [
+                    {'id': 'c5r1', 'author_id': 'u0', 'text': 'Try using git rerere. It remembers how you resolved conflicts before.', 'time': '2026-02-24T17:00:00Z', 'upvotes': 8, 'downvotes': 0, 'vote_users': {}},
+                ],
+            },
+        ],
+    },
+]
+
+GROUPS = [
+    {
+        '_id': 'g1',
+        'name': 'AI/ML Cohort 2026',
+        'description': 'Weekly discussions, paper reviews, and build sessions.',
+        'category': 'study',
+        'visibility': 'private',
+        'tags': ['AI', 'Machine Learning', 'Research'],
+        'owner_id': 'u1',
+        'members': [{'id': 'u1', 'role': 'owner'}, {'id': 'u0', 'role': 'member'}, {'id': 'u3', 'role': 'member'}],
+        'invitee_ids': ['u0'],
+        'request_ids': [],
+        'thread_id': '',
+    },
+    {
+        '_id': 'g2',
+        'name': 'Web Dev Club',
+        'description': 'Frontend, backend, and open-source collaboration circle.',
+        'category': 'club',
+        'visibility': 'public',
+        'tags': ['React', 'Node.js', 'UI/UX'],
+        'owner_id': 'u0',
+        'members': [{'id': 'u0', 'role': 'owner'}, {'id': 'u6', 'role': 'member'}],
+        'invitee_ids': ['u0'],
+        'request_ids': [],
+        'thread_id': '',
+    },
+    {
+        '_id': 'g3',
+        'name': 'Robotics Society',
+        'description': 'Hardware meets software. Open for interdisciplinary builds.',
+        'category': 'club',
+        'visibility': 'public',
+        'tags': ['Robotics', 'Automation', 'Hardware'],
+        'owner_id': 'u4',
+        'members': [{'id': 'u4', 'role': 'owner'}],
+        'invitee_ids': [],
+        'request_ids': [],
+        'thread_id': '',
+    },
+]
+
+PROJECTS = [
+    {
+        '_id': 'p1',
+        'project_id': 'STU-1234',
+        'title': 'Optical Lab',
+        'description': 'Collaborative optical physics experiment platform with simulation tools and data analysis.',
+        'visibility': 'public',
+        'tags': ['Physics', 'Simulation', 'Data Analysis'],
+        'owner_id': 'u0',
+        'members': [
+            {'id': 'u0', 'role': 'owner'},
+            {'id': 'u2', 'role': 'maintainer'},
+            {'id': 'u5', 'role': 'collaborator'},
+        ],
+        'join_requests': [],
+        'tasks': [
+            {'id': 'tk1', 'title': 'Set up experiment parameters', 'description': '', 'status': 'done', 'assignee': 'u0', 'deadline': None},
+            {'id': 'tk2', 'title': 'Build data collection module', 'description': '', 'status': 'done', 'assignee': 'u2', 'deadline': None},
+            {'id': 'tk3', 'title': 'Create visualization dashboard', 'description': '', 'status': 'in-progress', 'assignee': 'u0', 'deadline': '2026-02-28'},
+            {'id': 'tk4', 'title': 'Write final report', 'description': '', 'status': 'todo', 'assignee': 'u5', 'deadline': '2026-03-02'},
+            {'id': 'tk5', 'title': 'Peer review submission', 'description': '', 'status': 'todo', 'assignee': 'u2', 'deadline': '2026-03-04'},
+        ],
+        'activity': [
+            {'text': 'Sayak updated task "Create visualization dashboard"', 'time': '2026-02-27T11:00:00Z'},
+            {'text': 'Amit completed "Build data collection module"', 'time': '2026-02-26T16:00:00Z'},
+        ],
+        'progress': 67,
+        'thread_id': 't2',
+    },
+    {
+        '_id': 'p2',
+        'project_id': 'STU-5678',
+        'title': 'ML Study Group Hub',
+        'description': 'Shared resources, notebooks, and discussion threads for our machine learning study group.',
+        'visibility': 'private',
+        'tags': ['Machine Learning', 'Python', 'Study Group'],
+        'owner_id': 'u1',
+        'members': [
+            {'id': 'u1', 'role': 'owner'},
+            {'id': 'u0', 'role': 'collaborator'},
+            {'id': 'u3', 'role': 'collaborator'},
+            {'id': 'u6', 'role': 'viewer'},
+        ],
+        'join_requests': [],
+        'tasks': [
+            {'id': 'tk6', 'title': 'Curate dataset collection', 'description': '', 'status': 'done', 'assignee': 'u3', 'deadline': None},
+            {'id': 'tk7', 'title': 'Week 3 notebook: CNNs', 'description': '', 'status': 'in-progress', 'assignee': 'u1', 'deadline': '2026-03-01'},
+            {'id': 'tk8', 'title': 'Week 4 notebook: Transformers', 'description': '', 'status': 'todo', 'assignee': 'u0', 'deadline': '2026-03-05'},
+            {'id': 'tk9', 'title': 'Build project showcase page', 'description': '', 'status': 'todo', 'assignee': 'u6', 'deadline': None},
+        ],
+        'activity': [
+            {'text': 'Priya started work on "Week 3 notebook: CNNs"', 'time': '2026-02-27T09:00:00Z'},
+            {'text': 'Sara completed "Curate dataset collection"', 'time': '2026-02-25T14:00:00Z'},
+        ],
+        'progress': 42,
+        'thread_id': '',
+    },
+]
+
+FEED_ITEMS = [
+    {'_id': 'lf1', 'type': 'project', 'time': '2026-03-02T08:00:00Z', 'title': 'Optical Lab - New Collaboration Opening', 'description': 'Looking for 2 more collaborators to join the optical physics simulation project. Experience with Python and data viz preferred.', 'author_id': 'u0', 'tags': ['Physics', 'Simulation', 'Open Collab'], 'stats': {'members': 3, 'tasks': 5, 'progress': 67}, 'target_id': 'p1'},
+    {'_id': 'lf2', 'type': 'forum', 'time': '2026-03-02T07:30:00Z', 'title': 'Best resources for learning React in 2026?', 'description': 'Curating the best learning paths for React - share your favorite tutorials, docs, and courses.', 'author_id': 'u1', 'tags': ['React', 'Web Dev', 'Discussion'], 'stats': {'upvotes': 34, 'replies': 12}, 'target_id': 'f1'},
+    {'_id': 'lf3', 'type': 'project', 'time': '2026-03-01T18:00:00Z', 'title': 'ML Study Group Hub - Week 3 Notebook Ready', 'description': 'Week 3 notebook on CNNs is now live. Jump in to review, comment, or contribute your own experiments.', 'author_id': 'u3', 'tags': ['Machine Learning', 'Python', 'Notebooks'], 'stats': {'members': 4, 'tasks': 4, 'progress': 42}, 'target_id': 'p2'},
+    {'_id': 'lf4', 'type': 'forum', 'time': '2026-03-01T14:00:00Z', 'title': 'Weekly DSA practice group - LeetCode sessions', 'description': 'Hosting weekly 2-hour sessions every Saturday. We cover 3 problems: easy to hard.', 'author_id': 'u5', 'tags': ['DSA', 'LeetCode', 'Study Group'], 'stats': {'upvotes': 38, 'replies': 22}, 'target_id': 'f2'},
+]
+
+SEED_COLLECTIONS = {
+    'users': USERS,
+    'connections': CONNECTIONS,
+    'chat_threads': CHAT_THREADS,
+    'chat_messages': CHAT_MESSAGES,
+    'forum_categories': FORUM_CATEGORIES,
+    'forum_threads': FORUM_THREADS,
+    'groups': GROUPS,
+    'projects': PROJECTS,
+    'feed_items': FEED_ITEMS,
+}
+
+
+def get_seed_collections() -> dict:
+    return deepcopy(SEED_COLLECTIONS)
+
+
+def seed_store(store) -> None:
+    for collection_name, documents in get_seed_collections().items():
+        collection = store.collection(collection_name)
+        if collection.list_documents():
+            continue
+        for document in documents:
+            collection.save_document(document)

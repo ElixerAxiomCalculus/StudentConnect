@@ -21,20 +21,13 @@ export default function QuickAccessToolbar() {
         }, 600);
     };
 
-    const closeLiveMode = () => {
-        setShowLiveMode(false);
-    };
-
     return (
         <>
-            {/* Activation blur overlay */}
             {activating && <div className="qat-activation-wave" />}
+            {showLiveMode && <LiveMode onClose={() => setShowLiveMode(false)} />}
 
-            {/* Live Mode Overlay */}
-            {showLiveMode && <LiveMode onClose={closeLiveMode} />}
-
-            {/* Toolbar */}
             <div className="qat-container">
+                {/* Glass pill — the two side buttons live here */}
                 <GlassSurface
                     width="auto"
                     height={60}
@@ -47,7 +40,6 @@ export default function QuickAccessToolbar() {
                     className="qat-glass"
                 >
                     <div className="qat-buttons">
-                        {/* Chat Button */}
                         <button
                             className={`qat-btn ${isChat ? 'active' : ''}`}
                             onClick={() => navigate('/dashboard/chat')}
@@ -57,17 +49,9 @@ export default function QuickAccessToolbar() {
                             <span className="qat-tooltip">Chats</span>
                         </button>
 
-                        {/* Live Mode CTA */}
-                        <button
-                            className="qat-btn qat-live-btn"
-                            onClick={handleLiveMode}
-                            title="Start Live Mode"
-                        >
-                            <Zap size={22} />
-                            <span className="qat-pulse" />
-                        </button>
+                        {/* Invisible spacer so the glass pill accounts for live btn width */}
+                        <div className="qat-live-spacer" aria-hidden="true" />
 
-                        {/* Forums Button */}
                         <button
                             className={`qat-btn ${isForums ? 'active' : ''}`}
                             onClick={() => navigate('/dashboard/forums')}
@@ -78,6 +62,17 @@ export default function QuickAccessToolbar() {
                         </button>
                     </div>
                 </GlassSurface>
+
+                {/* Live mode button — absolutely positioned ABOVE the glass pill */}
+                <button
+                    className="qat-btn qat-live-btn"
+                    onClick={handleLiveMode}
+                    title="Start Live Mode"
+                >
+                    <Zap size={22} />
+                    <span className="qat-pulse" />
+                    <span className="qat-tooltip">Live Mode</span>
+                </button>
             </div>
         </>
     );

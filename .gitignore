@@ -1,12 +1,41 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
 
-# Virtual env
+# Virtual environments
 venv/
+.venv/
+env/
+.env.local
 
-# Mac
+# Secrets — never commit
+backend/.env
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Node
 node_modules/
+frontend/StudentConnect/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
