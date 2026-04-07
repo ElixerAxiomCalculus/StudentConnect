@@ -1,16 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import Lenis from '@studio-freight/lenis';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-let activeLenis = null;
-
+// Delegate to window.lenis (set by LandingPage) when on '/', otherwise fall back to native scroll.
 export function scrollToTarget(target, options = {}) {
-    if (typeof window === 'undefined') {
-        return;
-    }
+    if (typeof window === 'undefined') return;
 
-    if (activeLenis) {
-        activeLenis.scrollTo(target, {
+    const lenis = window.lenis;
+    if (lenis) {
+        lenis.scrollTo(target, {
             offset: options.offset ?? -96,
             duration: options.duration ?? 1.05,
             immediate: options.immediate ?? false,
@@ -26,9 +23,7 @@ export function scrollToTarget(target, options = {}) {
 
     if (typeof target === 'string') {
         const element = document.querySelector(target);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
     }
 
@@ -37,64 +32,22 @@ export function scrollToTarget(target, options = {}) {
     }
 }
 
+// SmoothScroll only handles scroll-to-top on route change.
+// Lenis instantiation for '/' is owned entirely by LandingPage to avoid two
+// instances fighting each other and causing jitter on scroll stop.
 export default function SmoothScroll({ children }) {
     const location = useLocation();
-    const frameRef = useRef(0);
-    const lenisRef = useRef(null);
-
-    useEffect(() => {
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        if (location.pathname !== '/' || prefersReducedMotion) {
-            if (frameRef.current) {
-                cancelAnimationFrame(frameRef.current);
-                frameRef.current = 0;
-            }
-            if (lenisRef.current) {
-                lenisRef.current.destroy();
-                lenisRef.current = null;
-            }
-            activeLenis = null;
-            return undefined;
-        }
-
-        const lenis = new Lenis({
-            duration: 1.05,
-            smoothWheel: true,
-            smoothTouch: false,
-            wheelMultiplier: 0.95,
-            touchMultiplier: 1.4,
-        });
-
-        lenisRef.current = lenis;
-        activeLenis = lenis;
-
-        const raf = (time) => {
-            lenis.raf(time);
-            frameRef.current = requestAnimationFrame(raf);
-        };
-
-        frameRef.current = requestAnimationFrame(raf);
-
-        return () => {
-            if (frameRef.current) {
-                cancelAnimationFrame(frameRef.current);
-                frameRef.current = 0;
-            }
-            if (activeLenis === lenis) {
-                activeLenis = null;
-            }
-            lenis.destroy();
-            lenisRef.current = null;
-        };
-    }, [location.pathname]);
 
     useEffect(() => {
         if (location.pathname === '/') {
-            scrollToTarget(0, { immediate: true, offset: 0 });
+            // LandingPage owns Lenis; let it settle before jumping to top.
+            if (window.lenis) {
+                window.lenis.scrollTo(0, { immediate: true });
+            } else {
+                window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            }
             return;
         }
-
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }, [location.pathname]);
 

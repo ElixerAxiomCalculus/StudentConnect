@@ -111,12 +111,13 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease, background 0.3s ease;
+  transition: transform 0.35s ease-out, background 0.35s ease-out, box-shadow 0.35s ease-out;
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon {

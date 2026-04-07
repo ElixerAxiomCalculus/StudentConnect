@@ -75,7 +75,7 @@ const HeroSection = () => {
       </motion.div>
 
       <div className="hero-content">
-        <div className="hero-eyebrow">🚀 Your campus network, reimagined</div>
+        <div className="hero-eyebrow"> Your campus network, reimagined</div>
 
         <h1 className="hero-title">
           <div className="hero-title-line">Find Your Perfect</div>
