@@ -1,15 +1,16 @@
 from typing import Annotated
 
-from fastapi import Header, Request
+from fastapi import Header
+from starlette.requests import HTTPConnection
 
 from app.core.config import get_settings
 
 
-def get_store(request: Request):
+def get_store(request: HTTPConnection):
     return request.app.state.store
 
 
-def get_chat_manager(request: Request):
+def get_chat_manager(request: HTTPConnection):
     return request.app.state.chat_manager
 
 

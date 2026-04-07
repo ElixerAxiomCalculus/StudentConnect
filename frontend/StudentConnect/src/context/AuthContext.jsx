@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://studentconnect-afez.onrender.com';
 const AuthContext = createContext(null);
 
 export function useAuth() {
@@ -20,6 +20,18 @@ async function authRequest(path, body) {
     return data;
 }
 
+function parseUser(raw) {
+    if (!raw) return null;
+    return {
+        id: raw.id ?? raw._id,
+        name: raw.name,
+        email: raw.email,
+        avatar: raw.avatar,
+        major: raw.major ?? '',
+        questionnaire_completed: raw.questionnaire_completed ?? true, // default true for existing/seed users
+    };
+}
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(() => localStorage.getItem('sc_token'));
@@ -33,7 +45,7 @@ export function AuthProvider({ children }) {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-            .then(u => { setUser(u); })
+            .then(raw => setUser(parseUser(raw)))
             .catch(() => { localStorage.removeItem('sc_token'); setToken(null); })
             .finally(() => setLoading(false));
     }, [token]);
@@ -41,7 +53,12 @@ export function AuthProvider({ children }) {
     const saveSession = useCallback((data) => {
         localStorage.setItem('sc_token', data.token);
         setToken(data.token);
-        setUser(data.user);
+        setUser(parseUser(data.user));
+    }, []);
+
+    /** Merge partial updates into user state without a full re-fetch */
+    const updateUser = useCallback((updates) => {
+        setUser(prev => prev ? { ...prev, ...updates } : prev);
     }, []);
 
     const signup = useCallback(async (name, email, password) => {
@@ -72,7 +89,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, signup, verifyOtp, resendOtp, login, logout }}>
+        <AuthContext.Provider value={{ user, token, loading, signup, verifyOtp, resendOtp, login, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

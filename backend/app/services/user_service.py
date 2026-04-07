@@ -9,11 +9,14 @@ def list_users(store) -> list[dict]:
         {
             'id': user['_id'],
             'name': user['name'],
-            'major': user['major'],
-            'year': user['year'],
+            'major': user.get('major', ''),
+            'year': user.get('year', 1),
             'avatar': user['avatar'],
             'online': user.get('online', False),
             'bio': user.get('bio', ''),
+            'interests': deepcopy(user.get('interests', [])),
+            'skills_offer': deepcopy(user.get('skills_offer', [])),
+            'goals': deepcopy(user.get('goals', [])),
         }
         for user in users
     ]
@@ -27,14 +30,29 @@ def get_current_user(store, user_id: str) -> dict | None:
     return {
         'id': user['_id'],
         'name': user['name'],
-        'major': user['major'],
-        'year': user['year'],
+        'email': user.get('email', ''),
+        'major': user.get('major', ''),
+        'year': user.get('year', 1),
+        'year_label': user.get('year_label', ''),
+        'semester': user.get('semester'),
+        'college': user.get('college', ''),
+        'department': user.get('department', ''),
+        'bio': user.get('bio', ''),
+        'github': user.get('github', ''),
+        'linkedin': user.get('linkedin', ''),
         'avatar': user['avatar'],
         'online': user.get('online', False),
-        'bio': user.get('bio', ''),
-        'email': user.get('email', ''),
-        'semester': user.get('semester'),
         'interests': deepcopy(user.get('interests', [])),
+        'skills_offer': deepcopy(user.get('skills_offer', [])),
+        'skills_seek': deepcopy(user.get('skills_seek', [])),
+        'goals': deepcopy(user.get('goals', [])),
+        'availability_days': deepcopy(user.get('availability_days', [])),
+        'availability_hours': deepcopy(user.get('availability_hours', [])),
+        'project_tags': deepcopy(user.get('project_tags', [])),
+        'team_size': user.get('team_size', '3–4'),
+        'weekly_commitment': user.get('weekly_commitment', ''),
+        'match_type': user.get('match_type', 'Complementary Skills'),
+        'questionnaire_completed': user.get('questionnaire_completed', True),
     }
 
 
@@ -43,7 +61,14 @@ def update_current_user(store, user_id: str, payload: dict) -> dict | None:
     if not user:
         return None
 
-    for key in ['name', 'major', 'semester', 'bio', 'avatar', 'interests']:
+    updatable_fields = [
+        'name', 'major', 'semester', 'bio', 'avatar', 'interests',
+        'github', 'linkedin', 'college', 'department',
+        'skills_offer', 'skills_seek', 'goals',
+        'availability_days', 'availability_hours', 'project_tags',
+        'team_size', 'weekly_commitment', 'match_type',
+    ]
+    for key in updatable_fields:
         value = payload.get(key)
         if value is not None:
             user[key] = value

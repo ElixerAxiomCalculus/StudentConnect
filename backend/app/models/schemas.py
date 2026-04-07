@@ -32,6 +32,60 @@ class UserProfileUpdate(BaseModel):
     bio: str | None = None
     avatar: str | None = None
     interests: list[str] | None = None
+    github: str | None = None
+    linkedin: str | None = None
+    college: str | None = None
+    department: str | None = None
+    skills_offer: list[str] | None = None
+    skills_seek: list[str] | None = None
+    goals: list[str] | None = None
+    availability_days: list[str] | None = None
+    availability_hours: list[str] | None = None
+    weekly_commitment: str | None = None
+    match_type: str | None = None
+
+
+class QuestionnaireProfile(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    college: str | None = None
+    department: str | None = None
+    year: int | None = None
+    year_label: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
+    interests: list[str] | None = None
+    bio: str | None = None
+
+
+class QuestionnairePersonality(BaseModel):
+    q1: int = 0
+    q2: int = 0
+    q3: int = 2
+    q4: float = 40.0
+    q5: int = 0
+    q6: int = 0
+    q7: int = 0
+    q8: int = 0
+    q9: int = 0
+
+
+class QuestionnairePreferences(BaseModel):
+    skills_offer: list[str] = Field(default_factory=list)
+    skills_seek: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(default_factory=list)
+    availability_days: list[str] = Field(default_factory=list)
+    availability_hours: list[str] = Field(default_factory=list)
+    project_tags: list[str] = Field(default_factory=list)
+    team_size: str = '3–4'
+    weekly_commitment: str = '6–8 hrs/week'
+    match_type: str = 'Complementary Skills'
+
+
+class QuestionnaireSubmit(BaseModel):
+    profile: QuestionnaireProfile
+    personality: QuestionnairePersonality
+    preferences: QuestionnairePreferences
 
 
 class NotificationSettingsUpdate(BaseModel):

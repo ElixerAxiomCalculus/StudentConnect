@@ -61,6 +61,7 @@ def verify_email(payload: VerifyEmailRequest, store=Depends(get_store)):
             'email': user['email'],
             'avatar': user['avatar'],
             'major': user.get('major', ''),
+            'questionnaire_completed': user.get('questionnaire_completed', False),
         },
     }
 
@@ -110,6 +111,7 @@ def login(payload: LoginRequest, store=Depends(get_store)):
             'email': user['email'],
             'avatar': user['avatar'],
             'major': user.get('major', ''),
+            'questionnaire_completed': user.get('questionnaire_completed', True),
         },
     }
 
@@ -131,4 +133,5 @@ def auth_me(
         'email': user.get('email', ''),
         'avatar': user['avatar'],
         'major': user.get('major', ''),
+        'questionnaire_completed': user.get('questionnaire_completed', True),
     }

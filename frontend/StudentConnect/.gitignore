@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Env files — only commit .env.production as it has no secrets (just public URLs)
+.env
+.env.local
+.env.development.local
+.env.test.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +28,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code
+.claude/
+
+# Build artifacts
+build/
+coverage/

@@ -1,5 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? API_BASE_URL.replace(/^http/i, 'ws');
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://studentconnect-afez.onrender.com';
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? API_BASE_URL.replace(/^https/i, 'wss').replace(/^http/i, 'ws');
 const DEFAULT_USER_ID = import.meta.env.VITE_DEMO_USER_ID ?? 'u0';
 
 async function request(path, options = {}) {
@@ -226,6 +226,14 @@ export async function recordMatchAction(targetUserId, action) {
 
 export async function updateMatchQuestionnaire(data) {
     return request('/api/matches/questionnaire', { method: 'POST', body: data });
+}
+
+export async function submitQuestionnaire(data) {
+    return request('/api/questionnaire', { method: 'POST', body: data });
+}
+
+export async function getQuestionnaireStatus() {
+    return request('/api/questionnaire/status');
 }
 
 export async function getMatchSummary() {

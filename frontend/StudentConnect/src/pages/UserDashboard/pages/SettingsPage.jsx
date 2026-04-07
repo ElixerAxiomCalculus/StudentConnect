@@ -1,11 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import {
-    User, Lock, Bell, Accessibility, Save, ChevronDown, Check, X as XIcon
+    User, Lock, Bell, Accessibility, Save, ChevronDown, Check, X as XIcon,
+    Target, Clock, Link2
 } from 'lucide-react';
 import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
 import { useToast } from '../components/Toast';
 import { getCurrentUser, updateProfile, getNotificationSettings, updateNotificationSettings } from '../data/api';
+
+/* ── Match profile data ── */
+const SKILLS_OFFER_LIST = ['Web Dev', 'AI / ML', 'UI / UX', 'Mobile Dev', 'Data Science', 'Cloud/DevOps', 'Cybersecurity', 'Marketing', 'Presentation', 'Content Writing'];
+const SKILLS_SEEK_LIST  = ['UI / UX', 'Data Science', 'Marketing', 'Research', 'Project Mgmt', 'Finance', 'Sales / BD', 'Video Editing'];
+const GOALS_LIST = ['Startup / Product', 'Hackathons', 'Research / Papers', 'Study Partner', 'Social Impact', 'Game Development'];
+const DAYS_LIST  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const HOURS_LIST = ['Early Morning', 'Morning', 'Afternoon', 'Evening', 'Night Owl'];
+const MATCH_TYPES = ['Complementary Skills', 'Similar to Me', 'Diverse Background', 'Surprise Me!'];
+
+function TagToggle({ items, selected = [], onChange }) {
+    const toggle = (item) => {
+        const next = selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item];
+        onChange(next);
+    };
+    return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {items.map(item => (
+                <button
+                    key={item}
+                    type="button"
+                    onClick={() => toggle(item)}
+                    style={{
+                        padding: '7px 14px', borderRadius: '99px', fontSize: '12.5px', fontWeight: 500,
+                        border: `1.5px solid ${selected.includes(item) ? 'var(--accent-3)' : 'rgba(0,0,0,0.12)'}`,
+                        background: selected.includes(item) ? 'var(--accent-3)' : 'rgba(255,255,255,0.6)',
+                        color: selected.includes(item) ? 'white' : 'var(--text-secondary)',
+                        cursor: 'pointer', transition: 'all 0.18s',
+                    }}
+                >
+                    {item}
+                </button>
+            ))}
+        </div>
+    );
+}
 
 /* ── 50 doodle-style avatar options using DiceBear fun-emoji ── */
 const AVATAR_SEEDS = [
@@ -94,7 +130,9 @@ export default function SettingsPage() {
     const addToast = useToast();
 
     useEffect(() => {
-        getCurrentUser().then(setProfile);
+        getCurrentUser().then(data => {
+            setProfile(data);
+        });
         getNotificationSettings().then(setNotifs);
     }, []);
 
@@ -216,8 +254,153 @@ export default function SettingsPage() {
                         style={{ marginTop: 8, maxWidth: 300 }}
                     />
                 </div>
+
+                {/* Professional Links */}
+                <div style={{ marginTop: 20 }}>
+                    <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Link2 size={14} /> Professional Links
+                    </h4>
+                    <div className="settings-grid">
+                        <div className="settings-field">
+                            <label className="settings-label">GitHub Username</label>
+                            <input
+                                className="input"
+                                value={profile.github || ''}
+                                onChange={e => setProfile({ ...profile, github: e.target.value })}
+                                placeholder="your-username"
+                            />
+                        </div>
+                        <div className="settings-field">
+                            <label className="settings-label">LinkedIn URL</label>
+                            <input
+                                className="input"
+                                value={profile.linkedin || ''}
+                                onChange={e => setProfile({ ...profile, linkedin: e.target.value })}
+                                placeholder="linkedin.com/in/you"
+                            />
+                        </div>
+                        <div className="settings-field">
+                            <label className="settings-label">College / University</label>
+                            <input
+                                className="input"
+                                value={profile.college || ''}
+                                onChange={e => setProfile({ ...profile, college: e.target.value })}
+                                placeholder="e.g. MIT, IIT Delhi"
+                            />
+                        </div>
+                        <div className="settings-field">
+                            <label className="settings-label">Department</label>
+                            <input
+                                className="input"
+                                value={profile.department || ''}
+                                onChange={e => setProfile({ ...profile, department: e.target.value })}
+                                placeholder="e.g. Computer Science"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={handleSaveProfile}>
                     <Save size={15} /> Save Profile
+                </button>
+            </FrostCard>
+
+            {/* Match Profile — Skills & Goals */}
+            <FrostCard flat className="settings-section">
+                <h3 className="settings-section-title"><Target size={18} /> Match Profile</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 20 }}>
+                    These preferences power the matching algorithm. Update them anytime to refine your recommendations.
+                </p>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">Skills I Can Offer</label>
+                    <TagToggle
+                        items={SKILLS_OFFER_LIST}
+                        selected={profile.skills_offer || []}
+                        onChange={v => setProfile({ ...profile, skills_offer: v })}
+                    />
+                </div>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">Skills I'm Looking For in a Partner</label>
+                    <TagToggle
+                        items={SKILLS_SEEK_LIST}
+                        selected={profile.skills_seek || []}
+                        onChange={v => setProfile({ ...profile, skills_seek: v })}
+                    />
+                </div>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">What I Want to Work On</label>
+                    <TagToggle
+                        items={GOALS_LIST}
+                        selected={profile.goals || []}
+                        onChange={v => setProfile({ ...profile, goals: v })}
+                    />
+                </div>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">I Want to Match With</label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {MATCH_TYPES.map(type => (
+                            <button
+                                key={type}
+                                type="button"
+                                onClick={() => setProfile({ ...profile, match_type: type })}
+                                style={{
+                                    padding: '7px 14px', borderRadius: '99px', fontSize: '12.5px', fontWeight: 500,
+                                    border: `1.5px solid ${profile.match_type === type ? 'var(--accent-3)' : 'rgba(0,0,0,0.12)'}`,
+                                    background: profile.match_type === type ? 'var(--accent-3)' : 'rgba(255,255,255,0.6)',
+                                    color: profile.match_type === type ? 'white' : 'var(--text-secondary)',
+                                    cursor: 'pointer', transition: 'all 0.18s',
+                                }}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <button className="btn btn-primary" style={{ marginTop: 4 }} onClick={handleSaveProfile}>
+                    <Save size={15} /> Save Match Profile
+                </button>
+            </FrostCard>
+
+            {/* Availability */}
+            <FrostCard flat className="settings-section">
+                <h3 className="settings-section-title"><Clock size={18} /> Availability</h3>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">Days I'm Available</label>
+                    <TagToggle
+                        items={DAYS_LIST}
+                        selected={profile.availability_days || []}
+                        onChange={v => setProfile({ ...profile, availability_days: v })}
+                    />
+                </div>
+
+                <div className="settings-field" style={{ marginBottom: 18 }}>
+                    <label className="settings-label">Preferred Working Hours</label>
+                    <TagToggle
+                        items={HOURS_LIST}
+                        selected={profile.availability_hours || []}
+                        onChange={v => setProfile({ ...profile, availability_hours: v })}
+                    />
+                </div>
+
+                <div className="settings-field" style={{ marginBottom: 4 }}>
+                    <label className="settings-label">Weekly Commitment</label>
+                    <input
+                        className="input"
+                        value={profile.weekly_commitment || ''}
+                        onChange={e => setProfile({ ...profile, weekly_commitment: e.target.value })}
+                        placeholder="e.g. 6–8 hrs/week"
+                        style={{ maxWidth: 240 }}
+                    />
+                </div>
+
+                <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={handleSaveProfile}>
+                    <Save size={15} /> Save Availability
                 </button>
             </FrostCard>
 

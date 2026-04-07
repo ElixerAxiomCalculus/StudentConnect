@@ -16,6 +16,10 @@ env/
 
 # Secrets — never commit
 backend/.env
+.env
+.env.*
+!.env.production
+!.env.example
 
 # OS
 .DS_Store
@@ -24,6 +28,7 @@ Thumbs.db
 # Node
 node_modules/
 frontend/StudentConnect/dist/
+frontend/StudentConnect/node_modules/
 
 # Logs
 *.log
@@ -39,3 +44,11 @@ npm-debug.log*
 .pytest_cache/
 .coverage
 htmlcov/
+tests/__pycache__/
+
+# Claude Code
+.claude/
+
+# Misc
+*.tmp
+*.bak

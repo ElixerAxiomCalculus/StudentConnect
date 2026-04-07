@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import QuickAccessToolbar from './components/QuickAccessToolbar';
 import HelpBot from './components/HelpBot';
+import DashboardOnboarding from './components/DashboardOnboarding';
 import { ToastProvider } from './components/Toast';
 import AnimatedPage from './components/AnimatedPage';
 import './dashboard.css';
@@ -61,6 +62,7 @@ export default function DashboardLayout() {
                 </main>
             </div>
             <HelpBot />
+            <DashboardOnboarding />
         </ToastProvider>
     );
 }

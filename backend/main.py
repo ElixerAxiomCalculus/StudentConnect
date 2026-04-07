@@ -15,6 +15,7 @@ from app.routes.groups import router as groups_router
 from app.routes.health import router as health_router
 from app.routes.matches import router as matches_router
 from app.routes.projects import router as projects_router
+from app.routes.questionnaire import router as questionnaire_router
 from app.routes.settings import router as settings_router
 from app.routes.users import router as users_router
 
@@ -52,6 +53,7 @@ app.include_router(users_router)
 app.include_router(settings_router)
 app.include_router(dashboard_router)
 app.include_router(matches_router)
+app.include_router(questionnaire_router)
 app.include_router(chat_router)
 app.include_router(chat_ws_router)
 app.include_router(forums_router)
