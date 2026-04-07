@@ -29,6 +29,24 @@ def _parse_csv(value: str | None, default: list[str] | None = None) -> list[str]
     return [item.strip() for item in value.split(',') if item.strip()]
 
 
+# These origins are always allowed regardless of the FRONTEND_ORIGINS env var.
+_HARDCODED_ORIGINS: list[str] = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://thestudentconnect.netlify.app',
+    'https://studentconnect-afez.onrender.com',
+]
+
+
+def _build_origins() -> list[str]:
+    """Merge env-var origins with the hardcoded list, deduplicated, no trailing slashes."""
+    from_env = _parse_csv(os.getenv('FRONTEND_ORIGINS'))
+    combined = dict.fromkeys(
+        o.rstrip('/') for o in [*_HARDCODED_ORIGINS, *from_env] if o
+    )
+    return list(combined)
+
+
 _load_env_file()
 
 
@@ -52,15 +70,7 @@ def get_settings() -> Settings:
         mongo_url=os.getenv('MONGO_URL', 'mongodb://localhost:27017'),
         mongo_db_name=os.getenv('MONGO_DB_NAME', 'studentconnect'),
         demo_user_id=os.getenv('DEMO_USER_ID', 'u0'),
-        frontend_origins=_parse_csv(
-            os.getenv('FRONTEND_ORIGINS'),
-            default=[
-                'http://localhost:5173',
-                'http://127.0.0.1:5173',
-                'https://thestudentconnect.netlify.app',
-                'https://studentconnect-afez.onrender.com',
-            ],
-        ),
+        frontend_origins=_build_origins(),
         jwt_secret=os.getenv('JWT_SECRET', 'change-me-in-production'),
         resend_api_key=os.getenv('RESEND_OTP', ''),
     )
