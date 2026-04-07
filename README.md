@@ -204,4 +204,6 @@ All endpoints are prefixed with `/api`. Auth endpoints are under `/api/auth/*`. 
 | Groups | `/api/groups` | list, create, join, leave, invite |
 | Projects | `/api/projects` | list, create, tasks, members |
 
+
+------------------------------
 TEST OUT AT : https://thestudentconnect.netlify.app/
