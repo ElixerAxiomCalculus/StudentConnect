@@ -13,7 +13,7 @@ def send_otp_email(to_email: str, otp: str) -> bool:
     resend.api_key = settings.resend_api_key
     try:
         resend.Emails.send({
-            'from': 'StudentConnect <onboarding@resend.dev>',
+            'from': 'StudentConnect <official@theprojectpsi.com>',
             'to': [to_email],
             'subject': 'Your StudentConnect Verification Code',
             'html': f'''
