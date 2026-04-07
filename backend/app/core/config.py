@@ -54,7 +54,12 @@ def get_settings() -> Settings:
         demo_user_id=os.getenv('DEMO_USER_ID', 'u0'),
         frontend_origins=_parse_csv(
             os.getenv('FRONTEND_ORIGINS'),
-            default=['http://localhost:5173', 'http://127.0.0.1:5173', 'https://thestudentconnect.netlify.app/'],
+            default=[
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+                'https://thestudentconnect.netlify.app',
+                'https://studentconnect-afez.onrender.com',
+            ],
         ),
         jwt_secret=os.getenv('JWT_SECRET', 'change-me-in-production'),
         resend_api_key=os.getenv('RESEND_OTP', ''),
