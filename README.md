@@ -204,18 +204,3 @@ All endpoints are prefixed with `/api`. Auth endpoints are under `/api/auth/*`. 
 | Groups | `/api/groups` | list, create, join, leave, invite |
 | Projects | `/api/projects` | list, create, tasks, members |
 
----
-
-## Demo Accounts
-
-When running with `USE_IN_MEMORY_DB=true`, these seed users are available via the `X-User-Id` header (no password required):
-
-| ID | Name | Major |
-|---|---|---|
-| `u0` | Sayak M | Computer Science |
-| `u1` | Priya R | Computer Science |
-| `u2` | Amit K | Electrical Engineering |
-| `u3` | Sara L | Data Science |
-| `u4` | Rohan D | Mechanical Engineering |
-| `u5` | Neha S | Physics |
-| `u6` | Vikram P | Computer Science |
