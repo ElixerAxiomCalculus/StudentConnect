@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
     User, Lock, Bell, Accessibility, Save, ChevronDown, Check, X as XIcon,
-    Target, Clock, Link2
+    Target, Clock, Link2, Trash2, AlertTriangle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
 import { useToast } from '../components/Toast';
-import { getCurrentUser, updateProfile, getNotificationSettings, updateNotificationSettings } from '../data/api';
+import { useAuth } from '../../../context/AuthContext';
+import { getCurrentUser, updateProfile, getNotificationSettings, updateNotificationSettings, deleteAccount } from '../data/api';
 
 /* ── Match profile data ── */
 const SKILLS_OFFER_LIST = ['Web Dev', 'AI / ML', 'UI / UX', 'Mobile Dev', 'Data Science', 'Cloud/DevOps', 'Cybersecurity', 'Marketing', 'Presentation', 'Content Writing'];
@@ -127,7 +129,12 @@ export default function SettingsPage() {
     const [reducedMotion, setReducedMotion] = useState(false);
     const [highContrast, setHighContrast] = useState(false);
     const [textScale, setTextScale] = useState(100);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleting, setDeleting] = useState(false);
     const addToast = useToast();
+    const navigate = useNavigate();
+    const { logout } = useAuth();
 
     useEffect(() => {
         getCurrentUser().then(data => {
@@ -154,6 +161,19 @@ export default function SettingsPage() {
         if (e.key === 'Enter' && e.target.value.trim()) {
             setProfile(p => ({ ...p, interests: [...(p.interests || []), e.target.value.trim()] }));
             e.target.value = '';
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') return;
+        setDeleting(true);
+        try {
+            await deleteAccount();
+            logout();
+            navigate('/auth');
+        } catch {
+            addToast?.('Failed to delete account. Please try again.', 'error');
+            setDeleting(false);
         }
     };
 
@@ -491,6 +511,74 @@ export default function SettingsPage() {
                         aria-label="Adjust text size"
                     />
                 </div>
+            </FrostCard>
+
+            {/* Danger Zone – Delete Account */}
+            <FrostCard flat className="settings-section" style={{ borderLeft: '3px solid var(--danger, #e53e3e)' }}>
+                <h3 className="settings-section-title" style={{ color: 'var(--danger, #e53e3e)' }}>
+                    <Trash2 size={18} /> Danger Zone
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 12 }}>
+                    Permanently delete your account and all associated data including chats, connections, and project memberships. This action cannot be undone.
+                </p>
+                {!showDeleteConfirm ? (
+                    <button
+                        className="btn"
+                        style={{
+                            background: 'var(--danger, #e53e3e)',
+                            color: '#fff',
+                            border: 'none',
+                        }}
+                        onClick={() => setShowDeleteConfirm(true)}
+                    >
+                        <Trash2 size={15} /> Delete Account
+                    </button>
+                ) : (
+                    <div style={{
+                        background: 'rgba(229,62,62,0.08)',
+                        borderRadius: 10,
+                        padding: 16,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 12,
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--danger, #e53e3e)', fontWeight: 600, fontSize: '0.9rem' }}>
+                            <AlertTriangle size={16} /> Are you absolutely sure?
+                        </div>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+                            Type <strong>DELETE</strong> below to confirm account deletion.
+                        </p>
+                        <input
+                            type="text"
+                            className="input"
+                            placeholder="Type DELETE to confirm"
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            style={{ maxWidth: 260 }}
+                        />
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button
+                                className="btn"
+                                style={{
+                                    background: 'var(--danger, #e53e3e)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    opacity: deleteConfirmText !== 'DELETE' || deleting ? 0.5 : 1,
+                                }}
+                                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                                onClick={handleDeleteAccount}
+                            >
+                                <Trash2 size={15} /> {deleting ? 'Deleting...' : 'Permanently Delete'}
+                            </button>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
             </FrostCard>
         </div>
     );

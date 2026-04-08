@@ -185,6 +185,10 @@ export async function updateProfile(data) {
     return request('/api/me', { method: 'PUT', body: data });
 }
 
+export async function deleteAccount() {
+    return request('/api/me', { method: 'DELETE' });
+}
+
 export async function getNotificationSettings() {
     return request('/api/settings/notifications');
 }

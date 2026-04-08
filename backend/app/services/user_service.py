@@ -138,3 +138,27 @@ def update_accessibility_settings(store, user_id: str, payload: dict) -> dict | 
 
     store.collection('users').save_document(user)
     return deepcopy(accessibility)
+
+
+def delete_user_account(store, user_id: str) -> bool:
+    """Delete a user and all associated data (connections, chat threads, messages, etc.)."""
+    user = store.collection('users').get_document(user_id)
+    if not user:
+        return False
+
+    # Remove connections involving this user
+    for conn in store.collection('connections').list_documents():
+        if user_id in conn.get('user_ids', []):
+            store.collection('connections').delete_document(conn['_id'])
+
+    # Remove chat threads and their messages where user is a participant
+    for thread in store.collection('chat_threads').list_documents():
+        if user_id in thread.get('participant_ids', []):
+            for msg in store.collection('chat_messages').list_documents():
+                if msg.get('thread_id') == thread['_id']:
+                    store.collection('chat_messages').delete_document(msg['_id'])
+            store.collection('chat_threads').delete_document(thread['_id'])
+
+    # Remove user document
+    store.collection('users').delete_document(user_id)
+    return True

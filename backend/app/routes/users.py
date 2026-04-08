@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.core.dependencies import get_current_user_id, get_store
 from app.models.schemas import UserProfileUpdate
 from app.services.connection_service import search_users
-from app.services.user_service import get_current_user, list_users, update_current_user
+from app.services.user_service import delete_user_account, get_current_user, list_users, update_current_user
 
 router = APIRouter(prefix='/api', tags=['users'])
 
@@ -45,3 +45,13 @@ def update_me(
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     return profile
+
+
+@router.delete('/me', status_code=status.HTTP_204_NO_CONTENT)
+def delete_me(
+    store=Depends(get_store),
+    user_id: str = Depends(get_current_user_id),
+):
+    deleted = delete_user_account(store, user_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')

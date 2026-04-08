@@ -11,7 +11,7 @@ import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
 import {
     getDashboardOverview, getLiveFeed, getDashboardAnalytics,
-    sendConnectionRequest, findOrCreateDM
+    findOrCreateDM
 } from '../data/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -461,11 +461,12 @@ export default function HomePage() {
                                             style={{ fontSize: '0.65rem', padding: '4px 8px' }}
                                             onClick={async () => {
                                                 try {
-                                                    await sendConnectionRequest(rec.id);
+                                                    await findOrCreateDM(rec.id);
+                                                    navigate('/dashboard/chat', { state: { openDmWith: rec.id } });
                                                 } catch {}
                                             }}
                                         >
-                                            <UserPlus size={10} /> Connect
+                                            <MessageCircle size={10} /> Connect
                                         </button>
                                     </div>
                                 ))}

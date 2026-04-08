@@ -7,6 +7,7 @@ import {
     BookOpen, Mail, Calendar, Heart, Edit3, Archive, Ban,
     FolderKanban, Upload, Download, FileText, MessageCircle
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import Avatar from '../components/Avatar';
 import SearchInput from '../components/SearchInput';
@@ -46,6 +47,7 @@ const quickEmojis = ['😀', '😂', '❤️', '👍', '👎', '🔥', '🎉', '
 const reactionEmojis = ['❤️', '😂', '👍', '😮', '🔥', '😢'];
 
 export default function ChatPage() {
+    const location = useLocation();
     const [threads, setThreads] = useState([]);
     const [activeThread, setActiveThread] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -91,6 +93,22 @@ export default function ChatPage() {
         getCurrentUser().then(setCurrentUser).catch(() => { });
         getUsers().then(setUsers).catch(() => { });
     }, []);
+
+    // Auto-open DM when navigated from Connect button
+    useEffect(() => {
+        const targetId = location.state?.openDmWith;
+        if (!targetId) return;
+        // Clear the state so refreshes don't re-trigger
+        window.history.replaceState({}, '');
+        findOrCreateDM(targetId).then(thread => {
+            setThreads(prev => {
+                if (prev.some(t => t.threadId === thread.threadId)) return prev;
+                return [thread, ...prev];
+            });
+            setActiveThread(thread);
+            setMobileShowChat(true);
+        }).catch(() => {});
+    }, [location.state]);
 
     // Search users for new chat
     useEffect(() => {
