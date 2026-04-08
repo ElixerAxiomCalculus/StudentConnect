@@ -239,3 +239,37 @@ export async function getQuestionnaireStatus() {
 export async function getMatchSummary() {
     return request('/api/matches/summary');
 }
+
+/* ── Connections ── */
+
+export async function getConnections() {
+    return request('/api/connections');
+}
+
+export async function sendConnectionRequest(targetUserId) {
+    return request('/api/connections/request', {
+        method: 'POST',
+        body: { target_user_id: targetUserId },
+    });
+}
+
+export async function acceptConnection(connectionId) {
+    return request(`/api/connections/${connectionId}/accept`, { method: 'POST' });
+}
+
+export async function declineConnection(connectionId) {
+    return request(`/api/connections/${connectionId}/decline`, { method: 'POST' });
+}
+
+export async function searchUsers(query) {
+    return request(`/api/users/search?q=${encodeURIComponent(query)}`);
+}
+
+/* ── DM ── */
+
+export async function findOrCreateDM(targetUserId) {
+    return request('/api/chat/dm', {
+        method: 'POST',
+        body: { participant_ids: [targetUserId] },
+    });
+}

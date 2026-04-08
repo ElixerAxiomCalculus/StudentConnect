@@ -75,8 +75,8 @@ export default function ProjectsPage() {
 
     const filteredProjects = projectsList
         .filter(p => {
-            if (tab === 'my') return p.members.some(m => m.id === 'u0' && m.role === 'owner');
-            if (tab === 'joined') return p.members.some(m => m.id === 'u0' && m.role !== 'owner');
+            if (tab === 'my') return p.members.some(m => m.id === currentUser.id && m.role === 'owner');
+            if (tab === 'joined') return p.members.some(m => m.id === currentUser.id && m.role !== 'owner');
             if (tab === 'public') return p.visibility === 'public';
             return true;
         })
@@ -275,7 +275,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast, users, current
     const totalCount = tasks.length;
     const overdueTasks = tasks.filter(t => t.deadline && new Date(t.deadline) < new Date() && t.status !== 'done');
 
-    const isOwner = project.members.some(m => m.id === 'u0' && m.role === 'owner');
+    const isOwner = project.members.some(m => m.id === currentUser.id && m.role === 'owner');
 
     const addTask = async () => {
         if (!taskForm.title.trim()) return;
@@ -283,7 +283,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast, users, current
             const updated = await createProjectTask(project.id, {
                 title: taskForm.title,
                 description: taskForm.description,
-                assignee: taskForm.assignee || 'u0',
+                assignee: taskForm.assignee || currentUser.id,
                 deadline: taskForm.deadline || null,
                 status: taskForm.status,
             });
@@ -324,7 +324,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast, users, current
     };
 
     const removeMember = async (memberId) => {
-        if (!isOwner || memberId === 'u0') return;
+        if (!isOwner || memberId === currentUser.id) return;
         try {
             const updated = await removeProjectMember(project.id, memberId);
             onUpdate(updated);
@@ -428,7 +428,7 @@ function ProjectDetailView({ project, onBack, onUpdate, addToast, users, current
                                         {roleIcons[m.role]} {m.role}
                                     </span>
                                 </div>
-                                {isOwner && m.id !== 'u0' && (
+                                {isOwner && m.id !== currentUser.id && (
                                     <button className="btn-icon-sm proj-member-remove" onClick={() => removeMember(m.id)} title="Remove member">
                                         <X size={12} />
                                     </button>

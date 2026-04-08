@@ -5,6 +5,19 @@ from copy import deepcopy
 from app.services.common import add_recent_activity, get_user_map, new_id, now_iso
 
 
+def _serialize_message(message: dict) -> dict:
+    return {
+        'id': message['_id'],
+        'threadId': message.get('thread_id', ''),
+        'senderId': message.get('sender_id', ''),
+        'text': message.get('text', ''),
+        'time': message.get('time', ''),
+        'status': message.get('status', 'delivered'),
+        'attachments': message.get('attachments', []),
+        'edited': message.get('edited', False),
+    }
+
+
 def _sort_messages(messages: list[dict]) -> list[dict]:
     return sorted(messages, key=lambda message: message['time'])
 
@@ -104,7 +117,7 @@ def get_messages(store, thread_id: str, user_id: str) -> list[dict] | None:
         for message in store.collection('chat_messages').list_documents()
         if message['thread_id'] == thread_id
     ]
-    return _sort_messages(messages)
+    return [_serialize_message(m) for m in _sort_messages(messages)]
 
 
 def send_message(store, thread_id: str, user_id: str, payload: dict) -> dict | None:
@@ -143,7 +156,43 @@ def send_message(store, thread_id: str, user_id: str, payload: dict) -> dict | N
             )
     thread['unread_counts'] = unread_counts
     store.collection('chat_threads').save_document(thread)
-    return message
+    return _serialize_message(message)
+
+
+def find_or_create_dm_thread(store, user_id: str, target_user_id: str) -> dict:
+    """Find existing DM thread between two users, or create one."""
+    pair = sorted([user_id, target_user_id])
+    for thread in store.collection('chat_threads').list_documents():
+        if thread['type'] == 'personal' and sorted(thread.get('participant_ids', [])) == pair:
+            user_map = get_user_map(store)
+            projects = {p['_id']: p for p in store.collection('projects').list_documents()}
+            groups = {g['_id']: g for g in store.collection('groups').list_documents()}
+            name, avatar, online = _build_thread_name(thread, user_id, user_map, projects, groups)
+            return {
+                'threadId': thread['_id'],
+                'name': name,
+                'avatar': avatar,
+                'lastMessage': thread.get('last_message_preview', ''),
+                'unread': thread.get('unread_counts', {}).get(user_id, 0),
+                'lastTime': thread.get('last_message_at', now_iso()),
+                'type': thread['type'],
+                'online': online,
+            }
+
+    payload = {'participant_ids': [target_user_id], 'type': 'personal'}
+    thread = create_thread(store, user_id, payload)
+    user_map = get_user_map(store)
+    other_user = user_map.get(target_user_id, {})
+    return {
+        'threadId': thread['_id'],
+        'name': other_user.get('name', 'Unknown'),
+        'avatar': other_user.get('avatar', ''),
+        'lastMessage': '',
+        'unread': 0,
+        'lastTime': thread.get('last_message_at', now_iso()),
+        'type': 'personal',
+        'online': other_user.get('online', False),
+    }
 
 
 def mark_thread_read(store, thread_id: str, user_id: str) -> dict | None:

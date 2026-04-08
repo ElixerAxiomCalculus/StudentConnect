@@ -3,40 +3,26 @@ import {
     Users, Clock, FolderKanban, MessageCircle, AtSign,
     Plus, UserPlus, Search, TrendingUp,
     BarChart3, Heart, Eye, Zap, Award, Target,
-    CalendarDays, Flame, ChevronRight, ThumbsUp, MessagesSquare
+    CalendarDays, Flame, ChevronRight, ThumbsUp, MessagesSquare,
+    CheckCircle2
 } from 'lucide-react';
 import gsap from 'gsap';
 import FrostCard from '../components/FrostCard';
 import Avatar from '../components/Avatar';
-import { getDashboardOverview, getLiveFeed, getDashboardAnalytics } from '../data/api';
+import {
+    getDashboardOverview, getLiveFeed, getDashboardAnalytics,
+    sendConnectionRequest, findOrCreateDM
+} from '../data/api';
 import { useNavigate } from 'react-router-dom';
 
-/* ── Static analytics (enhanced with API supplemental data) ── */
-const weeklyPostData = [28, 42, 35, 58, 47, 63, 52];
-const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const monthlyFollowers = [120, 135, 128, 142, 155, 168, 180, 195, 210, 225, 240, 262];
-const monthLabels = ['M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D', 'J', 'F'];
+/* ── Icon map for engagement items ── */
+const engagementIcons = {
+    'Posts': BarChart3,
+    'Comments': MessageCircle,
+    'Messages': Heart,
+    'Tasks Done': CheckCircle2,
+};
 
-const engagementBreakdown = [
-    { label: 'Posts',     value: 42,   color: '#d44332', icon: BarChart3 },
-    { label: 'Comments',  value: 128,  color: '#3b5999', icon: MessageCircle },
-    { label: 'Reactions', value: 315,  color: '#0080b2', icon: Heart },
-    { label: 'Views',     value: 2847, color: '#f59e0b', icon: Eye },
-];
-const streakData = { current: 14, best: 23, total: 187 };
-const topSkills = [
-    { name: 'React',           level: 92 },
-    { name: 'Python',          level: 85 },
-    { name: 'Machine Learning',level: 73 },
-    { name: 'UI/UX Design',    level: 68 },
-    { name: 'Node.js',         level: 80 },
-];
-const upcomingEvents = [
-    { id: 'e1', title: 'ML Study Group',      time: 'Today, 6:00 PM',     type: 'study' },
-    { id: 'e2', title: 'Physics Report Due',  time: 'Feb 28, 11:59 PM',  type: 'deadline' },
-    { id: 'e3', title: 'Hackathon Kickoff',   time: 'Mar 2, 10:00 AM',   type: 'event' },
-    { id: 'e4', title: 'DSA Practice',        time: 'Mar 1, 2:00 PM',    type: 'study' },
-];
 const statConfig = [
     { key: 'activeMatches',    label: 'Active Matches',    iconClass: 'icon-matches',   icon: Users },
     { key: 'pendingRequests',  label: 'Pending Requests',  iconClass: 'icon-requests',  icon: Clock },
@@ -211,18 +197,31 @@ function SkillBar({ name, level }) {
 export default function HomePage() {
     const [data, setData] = useState(null);
     const [feed, setFeed] = useState([]);
-    const [collaborators, setCollaborators] = useState([]);
+    const [analytics, setAnalytics] = useState(null);
     const navigate = useNavigate();
     const pageRef = useRef(null);
     const sectionsRef = useRef([]);
 
     useEffect(() => {
-        getDashboardOverview().then(setData);
-        getLiveFeed().then(setFeed);
-        getDashboardAnalytics()
-            .then(a => setCollaborators(a?.collaborators || []))
-            .catch(() => { });
+        getDashboardOverview().then(setData).catch(() => {});
+        getLiveFeed().then(setFeed).catch(() => {});
+        getDashboardAnalytics().then(setAnalytics).catch(() => {});
     }, []);
+
+    // Derived values from analytics
+    const weeklyPostData = analytics?.weeklyPostData || [0, 0, 0, 0, 0, 0, 0];
+    const weekLabels = analytics?.weekLabels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const monthlyFollowers = analytics?.monthlyFollowers || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const monthLabels = analytics?.monthLabels || ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    const engagementBreakdown = (analytics?.engagementBreakdown || []).map(e => ({
+        ...e,
+        icon: engagementIcons[e.label] || BarChart3,
+    }));
+    const streakData = analytics?.streakData || { current: 0, best: 0, total: 0 };
+    const topSkills = analytics?.topSkills || [];
+    const upcomingEvents = analytics?.upcomingEvents || [];
+    const collaborators = analytics?.collaborators || [];
+    const recommendations = analytics?.recommendations || [];
 
     useEffect(() => {
         if (!data || !pageRef.current) return;
@@ -337,8 +336,8 @@ export default function HomePage() {
                         </h3>
                         <BarChart data={weeklyPostData} labels={weekLabels} color="#d44332" height={120} />
                         <div className="chart-summary">
-                            <div><span className="chart-big">325</span> total</div>
-                            <div className="chart-trend up"><TrendingUp size={13} /> +18%</div>
+                            <div><span className="chart-big">{weeklyPostData.reduce((a, b) => a + b, 0)}</span> total</div>
+                            <div className="chart-trend up"><TrendingUp size={13} /> this week</div>
                         </div>
                     </FrostCard>
 
@@ -350,7 +349,7 @@ export default function HomePage() {
                         </h3>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                             <span className="chart-big">{monthlyFollowers[monthlyFollowers.length - 1]}</span>
-                            <span className="chart-trend up"><TrendingUp size={12} /> +{Math.round(((monthlyFollowers[11] - monthlyFollowers[0]) / monthlyFollowers[0]) * 100)}%</span>
+                            <span className="chart-trend up"><TrendingUp size={12} /> connections</span>
                         </div>
                         <Sparkline data={monthlyFollowers} color="#3b5999" />
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
@@ -415,10 +414,10 @@ export default function HomePage() {
                         </div>
                     </FrostCard>
 
-                    {/* ── Collaborators ── */}
+                    {/* ── Collaborators (Friends) ── */}
                     {collaborators.length > 0 && (
                         <FrostCard flat>
-                            <h3 className="section-title"><UserPlus size={16} /> Collaborators</h3>
+                            <h3 className="section-title"><Users size={16} /> Friends</h3>
                             <div className="collaborators-row" style={{ flexDirection: 'column' }}>
                                 {collaborators.slice(0, 3).map(user => (
                                     <div key={user.id} className="collaborator-chip">
@@ -430,9 +429,43 @@ export default function HomePage() {
                                         <button
                                             className="btn btn-sm btn-ghost"
                                             style={{ marginLeft: 'auto', fontSize: '0.68rem' }}
-                                            onClick={() => navigate('/dashboard/chat')}
+                                            onClick={async () => {
+                                                try {
+                                                    await findOrCreateDM(user.id);
+                                                    navigate('/dashboard/chat');
+                                                } catch {}
+                                            }}
                                         >
                                             <MessageCircle size={11} /> Msg
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </FrostCard>
+                    )}
+
+                    {/* ── Recommended Connections ── */}
+                    {recommendations.length > 0 && (
+                        <FrostCard flat>
+                            <h3 className="section-title"><UserPlus size={16} /> Recommended</h3>
+                            <div className="collaborators-row" style={{ flexDirection: 'column' }}>
+                                {recommendations.slice(0, 5).map(rec => (
+                                    <div key={rec.id} className="collaborator-chip">
+                                        <Avatar src={rec.avatarUrl} alt={rec.name} size="xs" online={rec.online} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div className="collaborator-name">{rec.name}</div>
+                                            <div className="collaborator-major">{rec.major} · {rec.matchPercentage}% match</div>
+                                        </div>
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            style={{ fontSize: '0.65rem', padding: '4px 8px' }}
+                                            onClick={async () => {
+                                                try {
+                                                    await sendConnectionRequest(rec.id);
+                                                } catch {}
+                                            }}
+                                        >
+                                            <UserPlus size={10} /> Connect
                                         </button>
                                     </div>
                                 ))}

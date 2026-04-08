@@ -9,6 +9,7 @@ from app.core.datastore import InMemoryStore, MongoStore
 from app.core.seed_data import get_seed_collections, seed_store
 from app.routes.auth import router as auth_router
 from app.routes.chat import router as chat_router, ws_router as chat_ws_router
+from app.routes.connections import router as connections_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.forums import router as forums_router
 from app.routes.groups import router as groups_router
@@ -31,7 +32,9 @@ def _build_store():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     store = _build_store()
-    seed_store(store)
+    # Only seed mock data for in-memory dev mode, never for MongoDB
+    if settings.use_in_memory_db:
+        seed_store(store)
     app.state.store = store
     app.state.chat_manager = ChatConnectionManager()
     yield
@@ -50,6 +53,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(connections_router)
 app.include_router(settings_router)
 app.include_router(dashboard_router)
 app.include_router(matches_router)

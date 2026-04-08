@@ -31,14 +31,9 @@ const TABS = [
     { id: 'invited',  label: 'Invitations' },
 ];
 
-function makeMockMessages(groupName) {
+function makeWelcomeMessage(groupName) {
     return [
-        { id: 'sys0', senderId: '__sys__', text: `Welcome to ${groupName}! 🎉 This is the beginning of the group chat.`, time: new Date(Date.now() - 86400000).toISOString(), isSystem: true },
-        { id: 'gm1', senderId: 'u_a1', senderName: 'Ananya S.', text: 'Hey everyone! Really glad to be part of this group 😊', time: new Date(Date.now() - 7200000).toISOString(), avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Ananya' },
-        { id: 'gm2', senderId: 'u_r1', senderName: 'Rohan M.', text: 'Same here! Looking forward to collaborating with you all 🚀', time: new Date(Date.now() - 5400000).toISOString(), avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Rohan' },
-        { id: 'gm3', senderId: 'u_k1', senderName: 'Kavya P.', text: 'Has anyone started reviewing the shared resources yet?', time: new Date(Date.now() - 3600000).toISOString(), avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Kavya' },
-        { id: 'gm4', senderId: 'u_a1', senderName: 'Ananya S.', text: 'Yes! I went through the first few. We should plan a sync session soon.', time: new Date(Date.now() - 1800000).toISOString(), avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Ananya' },
-        { id: 'gm5', senderId: 'u_r1', senderName: 'Rohan M.', text: '+1 for that. How does Friday evening sound?', time: new Date(Date.now() - 900000).toISOString(), avatar: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Rohan' },
+        { id: 'sys0', senderId: '__sys__', text: `Welcome to ${groupName}! This is the beginning of the group chat.`, time: new Date().toISOString(), isSystem: true },
     ];
 }
 
@@ -66,19 +61,37 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
     const wsRef          = useRef(null);
     const messagesEndRef = useRef(null);
     const inputRef       = useRef(null);
-    const threadId       = `group_${group.id}`;
+    const threadId       = group.threadId || `group_${group.id}`;
     const meta           = CATEGORY_META[group.category] || CATEGORY_META.study;
 
     /* Load history + connect WS */
     useEffect(() => {
         setLoading(true);
+        if (!group.threadId) {
+            // No chat thread exists for this group
+            setMessages(makeWelcomeMessage(group.name));
+            setLoading(false);
+            setWsStatus('offline');
+            return;
+        }
+
         getMessages(threadId)
             .then(data => {
-                setMessages(Array.isArray(data) && data.length > 0 ? data : makeMockMessages(group.name));
+                const msgs = Array.isArray(data) && data.length > 0
+                    ? data.map(m => ({
+                        id: m.id || m._id,
+                        senderId: m.senderId || m.sender_id,
+                        senderName: m.senderName || '',
+                        text: m.text,
+                        time: m.time,
+                        avatar: m.avatar || '',
+                    }))
+                    : makeWelcomeMessage(group.name);
+                setMessages(msgs);
                 setLoading(false);
             })
             .catch(() => {
-                setMessages(makeMockMessages(group.name));
+                setMessages(makeWelcomeMessage(group.name));
                 setLoading(false);
             });
 
@@ -91,8 +104,22 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
             ws.onclose = () => setWsStatus('offline');
             ws.onmessage = (evt) => {
                 try {
-                    const msg = JSON.parse(evt.data);
-                    setMessages(prev => [...prev, { ...msg, own: msg.senderId === currentUser?.id }]);
+                    const data = JSON.parse(evt.data);
+                    if (data.type === 'message_created' && data.payload) {
+                        const msg = data.payload;
+                        setMessages(prev => {
+                            if (prev.some(m => m.id === msg.id)) return prev;
+                            return [...prev, {
+                                id: msg.id,
+                                senderId: msg.senderId,
+                                senderName: msg.senderName || '',
+                                text: msg.text,
+                                time: msg.time,
+                                avatar: msg.avatar || '',
+                                own: msg.senderId === currentUser?.id,
+                            }];
+                        });
+                    }
                 } catch { }
             };
         } catch {
@@ -100,7 +127,7 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
         }
 
         return () => { wsRef.current?.close(); };
-    }, [group.id]);
+    }, [group.id, group.threadId]);
 
     /* Auto-scroll */
     useEffect(() => {
@@ -134,13 +161,8 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
     };
 
-    /* Fake member list (group.members is just a count; build avatars) */
-    const memberAvatars = Array.from({ length: Math.min(group.members || 4, 8) }, (_, i) => ({
-        id: `gm_${i}`,
-        name: ['Ananya S.', 'Rohan M.', 'Kavya P.', 'Arjun D.', 'Meera K.', 'Vikash R.', 'Shreya T.', 'Dev P.'][i] || `Member ${i + 1}`,
-        avatar: `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${['Ananya','Rohan','Kavya','Arjun','Meera','Vikash','Shreya','Dev'][i] || i}`,
-        online: i < 3,
-    }));
+    /* Member count display (real member data comes from group.memberIds) */
+    const memberCount = group.members || 0;
 
     return (
         <div className="group-chat-view">
@@ -237,10 +259,10 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
                 {showMembers && (
                     <div className="group-chat-members-panel">
                         <div className="group-members-panel-header">
-                            <h4><Users size={14} /> Members ({group.members})</h4>
+                            <h4><Users size={14} /> Members ({memberCount})</h4>
                         </div>
                         <div className="group-members-list">
-                            {/* Current user first */}
+                            {/* Current user */}
                             <div className="group-member-row you">
                                 <Avatar src={currentUser?.avatar} alt="You" size="xs" online />
                                 <div className="group-member-info">
@@ -248,17 +270,15 @@ function GroupChatView({ group, currentUser, onBack, addToast }) {
                                     <span className="group-member-status online">Online</span>
                                 </div>
                             </div>
-                            {memberAvatars.map(m => (
-                                <div key={m.id} className="group-member-row">
-                                    <Avatar src={m.avatar} alt={m.name} size="xs" online={m.online} />
+                            {memberCount > 1 && (
+                                <div className="group-member-row">
                                     <div className="group-member-info">
-                                        <span className="group-member-name">{m.name}</span>
-                                        <span className={`group-member-status ${m.online ? 'online' : ''}`}>
-                                            {m.online ? 'Online' : 'Offline'}
+                                        <span className="group-member-name" style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                                            +{memberCount - 1} other member{memberCount > 2 ? 's' : ''}
                                         </span>
                                     </div>
                                 </div>
-                            ))}
+                            )}
                         </div>
                         <div className="group-members-panel-footer">
                             <button className="btn btn-sm btn-ghost" style={{ width: '100%', fontSize: '0.72rem' }}>

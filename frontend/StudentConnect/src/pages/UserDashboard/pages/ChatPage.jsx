@@ -11,7 +11,11 @@ import gsap from 'gsap';
 import Avatar from '../components/Avatar';
 import SearchInput from '../components/SearchInput';
 import { useToast } from '../components/Toast';
-import { getChatThreads, getMessages, sendMessage, getCurrentUser, getUsers } from '../data/api';
+import {
+    getChatThreads, getMessages, sendMessage, getCurrentUser, getUsers,
+    searchUsers, findOrCreateDM, getConnections, sendConnectionRequest,
+    getChatSocketUrl
+} from '../data/api';
 
 function formatChatTime(iso) {
     const d = new Date(iso);
@@ -70,25 +74,63 @@ export default function ChatPage() {
     const [attachments, setAttachments] = useState([]);
     const [currentUser, setCurrentUser] = useState({ id: 'u0', name: 'You', avatar: '' });
     const [users, setUsers] = useState([]);
+    const [showNewChat, setShowNewChat] = useState(false);
+    const [newChatSearch, setNewChatSearch] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
     const messagesEndRef = useRef(null);
     const chatMainRef = useRef(null);
     const profileRef = useRef(null);
     const settingsRef = useRef(null);
     const inputRef = useRef(null);
+    const wsRef = useRef(null);
     const addToast = useToast();
 
     useEffect(() => {
-        getChatThreads().then(setThreads);
+        getChatThreads().then(setThreads).catch(() => {});
         getCurrentUser().then(setCurrentUser).catch(() => { });
         getUsers().then(setUsers).catch(() => { });
     }, []);
 
+    // Search users for new chat
+    useEffect(() => {
+        if (!newChatSearch.trim()) { setSearchResults([]); return; }
+        const timer = setTimeout(() => {
+            setSearching(true);
+            searchUsers(newChatSearch.trim())
+                .then(setSearchResults)
+                .catch(() => setSearchResults([]))
+                .finally(() => setSearching(false));
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [newChatSearch]);
+
     useEffect(() => {
         if (activeThread) {
-            getMessages(activeThread.threadId).then(setMessages);
+            getMessages(activeThread.threadId).then(setMessages).catch(() => setMessages([]));
             setTimeout(() => inputRef.current?.focus(), 100);
+
+            // Connect WebSocket for real-time messages
+            try {
+                wsRef.current?.close();
+                const wsUrl = getChatSocketUrl(activeThread.threadId, currentUser?.id);
+                const ws = new WebSocket(wsUrl);
+                wsRef.current = ws;
+                ws.onmessage = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.data);
+                        if (data.type === 'message_created' && data.payload) {
+                            setMessages(prev => {
+                                if (prev.some(m => m.id === data.payload.id)) return prev;
+                                return [...prev, data.payload];
+                            });
+                        }
+                    } catch {}
+                };
+            } catch {}
         }
-    }, [activeThread]);
+        return () => { wsRef.current?.close(); };
+    }, [activeThread, currentUser?.id]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -118,6 +160,34 @@ export default function ChatPage() {
         window.addEventListener('click', handler);
         return () => window.removeEventListener('click', handler);
     }, []);
+
+    const handleStartDM = async (targetUser) => {
+        try {
+            const thread = await findOrCreateDM(targetUser.id);
+            setShowNewChat(false);
+            setNewChatSearch('');
+            setSearchResults([]);
+            // Add to threads if not already there
+            setThreads(prev => {
+                if (prev.some(t => t.threadId === thread.threadId)) return prev;
+                return [thread, ...prev];
+            });
+            setActiveThread(thread);
+            setMobileShowChat(true);
+            addToast?.(`Chat with ${targetUser.name} opened`, 'success');
+        } catch {
+            addToast?.('Failed to create chat', 'error');
+        }
+    };
+
+    const handleAddFriend = async (userId, userName) => {
+        try {
+            await sendConnectionRequest(userId);
+            addToast?.(`Friend request sent to ${userName}!`, 'success');
+        } catch {
+            addToast?.('Failed to send request', 'error');
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim() || !activeThread) return;
@@ -288,8 +358,8 @@ export default function ChatPage() {
                 <div className={`chat-sidebar-premium ${mobileShowChat ? 'hidden-mobile' : ''}`}>
                     <div className="chat-sidebar-top">
                         <h3 className="chat-sidebar-title">Messages</h3>
-                        <button className="btn-icon-sm" onClick={() => addToast?.('New chat coming soon!', 'info')} aria-label="New chat">
-                            <Paperclip size={16} />
+                        <button className="btn-icon-sm" onClick={() => setShowNewChat(true)} aria-label="New chat" title="New chat">
+                            <UserPlus size={16} />
                         </button>
                     </div>
 
@@ -695,7 +765,62 @@ export default function ChatPage() {
                     <div className="chat-empty-premium">
                         <EmptyStateIcon />
                         <h3>Start a conversation</h3>
-                        <p>Select a chat from the sidebar or start a new one</p>
+                        <p>Select a chat from the sidebar or search for users to start a new one</p>
+                        <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowNewChat(true)}>
+                            <UserPlus size={14} /> Find People & Chat
+                        </button>
+                    </div>
+                )}
+
+                {/* ═══ New Chat Modal ═══ */}
+                {showNewChat && (
+                    <div className="chat-new-chat-overlay" onClick={() => setShowNewChat(false)}>
+                        <div className="chat-new-chat-modal" onClick={e => e.stopPropagation()}>
+                            <div className="chat-new-chat-header">
+                                <h3>New Conversation</h3>
+                                <button className="btn-icon-sm" onClick={() => setShowNewChat(false)}><X size={16} /></button>
+                            </div>
+                            <div className="chat-new-chat-search">
+                                <Search size={14} />
+                                <input
+                                    type="text"
+                                    placeholder="Search users by name or major…"
+                                    value={newChatSearch}
+                                    onChange={e => setNewChatSearch(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="chat-new-chat-results">
+                                {searching && <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: '0.82rem' }}>Searching…</div>}
+                                {!searching && newChatSearch && searchResults.length === 0 && (
+                                    <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center' }}>
+                                        No users found for "{newChatSearch}"
+                                    </div>
+                                )}
+                                {!searching && !newChatSearch && (
+                                    <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center' }}>
+                                        Search for registered users to start a conversation
+                                    </div>
+                                )}
+                                {searchResults.map(user => (
+                                    <div key={user.id} className="chat-new-chat-user">
+                                        <Avatar src={user.avatar} alt={user.name} size="sm" online={user.online} />
+                                        <div className="chat-new-chat-user-info">
+                                            <span className="chat-new-chat-user-name">{user.name}</span>
+                                            <span className="chat-new-chat-user-meta">{user.major} · Year {user.year}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <button className="btn btn-sm btn-primary" onClick={() => handleStartDM(user)}>
+                                                <MessageCircle size={12} /> Chat
+                                            </button>
+                                            <button className="btn btn-sm btn-secondary" onClick={() => handleAddFriend(user.id, user.name)}>
+                                                <UserPlus size={12} /> Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
 
