@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.dependencies import get_current_user_id, get_store
-from app.services.dashboard_service import get_dashboard_analytics, get_dashboard_overview, get_live_feed
+from app.services.dashboard_service import get_dashboard_analytics, get_dashboard_overview, get_live_feed, get_notification_counts
 
 router = APIRouter(prefix='/api/dashboard', tags=['dashboard'])
 
@@ -31,3 +31,14 @@ def dashboard_analytics(
     if analytics is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     return analytics
+
+
+@router.get('/notifications/counts')
+def notification_counts(
+    store=Depends(get_store),
+    user_id: str = Depends(get_current_user_id),
+):
+    counts = get_notification_counts(store, user_id)
+    if counts is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
+    return counts

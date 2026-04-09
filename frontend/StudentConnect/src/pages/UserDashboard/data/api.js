@@ -46,6 +46,10 @@ export async function getDashboardAnalytics() {
     return request('/api/dashboard/analytics');
 }
 
+export async function getNotificationCounts() {
+    return request('/api/dashboard/notifications/counts');
+}
+
 export async function getLiveFeed() {
     return request('/api/dashboard/feed');
 }

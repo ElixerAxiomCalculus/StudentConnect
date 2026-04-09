@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
     Home, MessageCircle, FolderKanban, MessagesSquare,
@@ -7,12 +7,13 @@ import {
 import gsap from 'gsap';
 import Avatar from './Avatar';
 import { useAuth } from '../../../context/AuthContext';
+import { getNotificationCounts } from '../data/api';
 
-const navItems = [
+const NAV_ITEMS = [
     { to: '/dashboard', icon: Home, label: 'Home', end: true },
-    { to: '/dashboard/chat', icon: MessageCircle, label: 'Chat', badge: 4 },
-    { to: '/dashboard/projects', icon: FolderKanban, label: 'Projects', badge: 1 },
-    { to: '/dashboard/forums', icon: MessagesSquare, label: 'Forums', badge: 2 },
+    { to: '/dashboard/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'chat' },
+    { to: '/dashboard/projects', icon: FolderKanban, label: 'Projects', badgeKey: 'projects' },
+    { to: '/dashboard/forums', icon: MessagesSquare, label: 'Forums', badgeKey: 'forums' },
     { to: '/dashboard/groups', icon: Users, label: 'Groups' },
     { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
@@ -26,6 +27,7 @@ export default function Sidebar() {
         major: user?.major || 'Undeclared',
         online: true,
     };
+    const [badgeCounts, setBadgeCounts] = useState({ chat: 0, projects: 0, forums: 0 });
     const sidebarRef = useRef(null);
     const navItemsRef = useRef([]);
     const brandingRef = useRef(null);
@@ -58,6 +60,15 @@ export default function Sidebar() {
         }, sidebarRef);
         return () => ctx.revert();
     }, []);
+
+    // Fetch live badge counts on mount and when route changes
+    useEffect(() => {
+        let cancelled = false;
+        getNotificationCounts()
+            .then(data => { if (!cancelled) setBadgeCounts(data); })
+            .catch(() => {});
+        return () => { cancelled = true; };
+    }, [location.pathname]);
 
     const handleNavHover = useCallback((e, entering) => {
         const el = e.currentTarget;
@@ -113,31 +124,34 @@ export default function Sidebar() {
 
                 {/* Nav */}
                 <nav className="sidebar-nav">
-                    {navItems.map(({ to, icon: Icon, label, badge, end }, idx) => (
-                        <NavLink
-                            key={to}
-                            to={to}
-                            end={end}
-                            ref={el => navItemsRef.current[idx] = el}
-                            className={({ isActive }) =>
-                                `sidebar-nav-item ${isActive ? 'active' : ''}`
-                            }
-                            aria-label={label}
-                            aria-current={location.pathname === to ? 'page' : undefined}
-                            onMouseEnter={(e) => handleNavHover(e, true)}
-                            onMouseLeave={(e) => handleNavHover(e, false)}
-                        >
-                            <span className="nav-icon-wrap">
-                                <Icon className="sidebar-nav-icon" size={20} />
-                                {badge > 0 && (
-                                    <span className="nav-badge" aria-label={`${badge} notifications`}>
-                                        {badge}
-                                    </span>
-                                )}
-                            </span>
-                            <span className="sidebar-nav-label">{label}</span>
-                        </NavLink>
-                    ))}
+                    {NAV_ITEMS.map(({ to, icon: Icon, label, badgeKey, end }, idx) => {
+                        const badge = badgeKey ? badgeCounts[badgeKey] || 0 : 0;
+                        return (
+                            <NavLink
+                                key={to}
+                                to={to}
+                                end={end}
+                                ref={el => navItemsRef.current[idx] = el}
+                                className={({ isActive }) =>
+                                    `sidebar-nav-item ${isActive ? 'active' : ''}`
+                                }
+                                aria-label={label}
+                                aria-current={location.pathname === to ? 'page' : undefined}
+                                onMouseEnter={(e) => handleNavHover(e, true)}
+                                onMouseLeave={(e) => handleNavHover(e, false)}
+                            >
+                                <span className="nav-icon-wrap">
+                                    <Icon className="sidebar-nav-icon" size={20} />
+                                    {badge > 0 && (
+                                        <span className="nav-badge" aria-label={`${badge} notifications`}>
+                                            {badge}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="sidebar-nav-label">{label}</span>
+                            </NavLink>
+                        );
+                    })}
                 </nav>
             </div>
 
@@ -145,7 +159,7 @@ export default function Sidebar() {
             <div className="sidebar-logout">
                 <NavLink
                     to="/dashboard/logout"
-                    ref={el => navItemsRef.current[navItems.length] = el}
+                    ref={el => navItemsRef.current[NAV_ITEMS.length] = el}
                     className={({ isActive }) =>
                         `sidebar-nav-item ${isActive ? 'active' : ''}`
                     }

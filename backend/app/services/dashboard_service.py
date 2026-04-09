@@ -18,6 +18,38 @@ def _safe_parse(value: str) -> datetime | None:
         return None
 
 
+def get_notification_counts(store, user_id: str) -> dict | None:
+    user = store.collection('users').get_document(user_id)
+    if not user:
+        return None
+
+    # Chat: sum of unread messages across all threads
+    chat_count = sum(
+        thread.get('unread_counts', {}).get(user_id, 0)
+        for thread in store.collection('chat_threads').list_documents()
+        if user_id in thread.get('participant_ids', [])
+    )
+
+    # Projects: pending join requests on projects the user is a member of
+    projects_count = 0
+    for project in store.collection('projects').list_documents():
+        if any(m['id'] == user_id for m in project.get('members', [])):
+            projects_count += len(project.get('join_requests', []))
+
+    # Forums: threads where the user is mentioned by name
+    forum_count = 0
+    user_name_parts = user['name'].lower().split()
+    for thread in store.collection('forum_threads').list_documents():
+        for comment in thread.get('comments', []):
+            if comment.get('author_id') == user_id:
+                continue
+            text_lower = comment.get('text', '').lower()
+            if any(part in text_lower for part in user_name_parts if len(part) > 2):
+                forum_count += 1
+
+    return {'chat': chat_count, 'projects': projects_count, 'forums': forum_count}
+
+
 def get_dashboard_overview(store, user_id: str) -> dict | None:
     user = store.collection('users').get_document(user_id)
     if not user:
