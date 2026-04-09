@@ -23,8 +23,8 @@ def _serialize_group(group: dict, user_id: str) -> dict:
 
 
 def _ensure_group_thread(store, group: dict) -> dict:
-    """Create a chat thread for a group that doesn't have one yet."""
-    if group.get('thread_id'):
+    """Create a chat thread for a group if it doesn't exist or was deleted."""
+    if group.get('thread_id') and store.collection('chat_threads').get_document(group['thread_id']):
         return group
 
     member_ids = [m['id'] for m in group.get('members', [])]
