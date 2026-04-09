@@ -21,7 +21,7 @@ const LandingPage = () => {
   const cursorDotRef = useRef(null);
 
   useEffect(() => {
-    // Smooth scroll
+    
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -34,7 +34,7 @@ const LandingPage = () => {
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.lagSmoothing(0);
 
-    // Custom cursor
+    
     const cursor = cursorRef.current;
     const dot = cursorDotRef.current;
     const moveCursor = (e) => {
@@ -43,7 +43,7 @@ const LandingPage = () => {
     };
     window.addEventListener('mousemove', moveCursor);
 
-    // Hover scale effect on interactive elements
+    
     const interactives = document.querySelectorAll('a, button, .feature-card, .stat-card');
     const grow = () => gsap.to(cursor, { scale: 1.8, duration: 0.3 });
     const shrink = () => gsap.to(cursor, { scale: 1, duration: 0.3 });
@@ -58,7 +58,7 @@ const LandingPage = () => {
     };
   }, []);
 
-  // Global Background Color Transition setup
+  
   useEffect(() => {
     const ctx = gsap.context(() => {
       const sections = [
@@ -88,7 +88,7 @@ const LandingPage = () => {
           document.body.classList.remove('theme-dark');
         }
 
-        // Apply dynamic cursor color via GSAP directly
+        
         if (cursorDotRef.current && cursorRef.current) {
           gsap.to(cursorDotRef.current, { backgroundColor: sec.accentColor, duration: 0.5 });
           const ring = cursorRef.current.querySelector('.cursor-ring');
@@ -114,23 +114,23 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page" ref={containerRef}>
-      {/* Custom Cursor */}
+      
       <div ref={cursorRef} className="custom-cursor">
         <div className="cursor-ring" />
       </div>
       <div ref={cursorDotRef} className="custom-cursor-dot" />
 
-      {/* Global Background Layer for colors */}
+      
       <div className="global-bg" style={{ position: 'fixed', inset: 0, zIndex: -2 }} />
 
-      {/* Animated gradient background (fallback/blend with 3D), lowered opacity for solid colors */}
+      
       <div className="landing-gradient-bg" style={{ opacity: 0.1 }}>
         <div className="gradient-orb orb-1" />
         <div className="gradient-orb orb-2" />
         <div className="gradient-orb orb-3" />
       </div>
 
-      {/* 3D Scene Background */}
+      
       <LandingScene />
 
       <FloatingNav />

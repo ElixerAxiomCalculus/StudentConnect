@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// --- 3D Materials ---
+
 const glassMaterial = {
     roughness: 0.1, metalness: 0.8, transmission: 0.9, ior: 1.5, thickness: 0.5, clearcoat: 1
 };
@@ -15,9 +15,9 @@ const blueMaterial = { color: "#3d5999", emissive: "#3d5999", emissiveIntensity:
 const yellowMaterial = { color: "#ffdc82", emissive: "#ffdc82", emissiveIntensity: 0.4, roughness: 0.2, metalness: 0.5 };
 const whiteMaterial = { color: "#ffffff", roughness: 1 };
 
-// --- Objects ---
 
-// 1. Hero: Connection Nodes
+
+
 const ConnectionNode = React.forwardRef((props, ref) => (
     <group ref={ref} {...props}>
         <Sphere args={[0.8, 32, 32]} castShadow>
@@ -34,7 +34,7 @@ const ConnectionNode = React.forwardRef((props, ref) => (
     </group>
 ));
 
-// 2. Mission: Lightbulb
+
 const Lightbulb = React.forwardRef((props, ref) => (
     <group ref={ref} {...props}>
         <Sphere args={[1, 32, 32]} position={[0, 0.5, 0]} castShadow>
@@ -51,7 +51,7 @@ const Lightbulb = React.forwardRef((props, ref) => (
     </group>
 ));
 
-// 3. Features: Smartphone
+
 const PhoneObject = React.forwardRef((props, ref) => (
     <group ref={ref} {...props}>
         <RoundedBox args={[2, 4, 0.2]} radius={0.15} castShadow>
@@ -67,7 +67,7 @@ const PhoneObject = React.forwardRef((props, ref) => (
     </group>
 ));
 
-// 4. About: Graduation Cap
+
 const GraduationCap = React.forwardRef((props, ref) => (
     <group ref={ref} {...props}>
         <Cylinder args={[0.8, 0.8, 0.5, 32]} position={[0, -0.25, 0]}>
@@ -85,7 +85,7 @@ const GraduationCap = React.forwardRef((props, ref) => (
     </group>
 ));
 
-// 5. Contact: Paper Plane
+
 const PaperPlane = React.forwardRef((props, ref) => (
     <group ref={ref} {...props}>
         <Cone args={[1, 3, 3]} rotation={[-Math.PI / 2, 0, 0]} castShadow>
@@ -117,30 +117,30 @@ const AnimatedSceneCluster = () => {
                 }
             });
 
-            // Initial State setup
+            
             gsap.set(masterGroup.current.position, { x: 3, y: 1, z: 0 }); // Hero Top Right
             gsap.set(nodeRef.current.scale, { x: 1, y: 1, z: 1 });
             gsap.set([bulbRef.current.scale, phoneRef.current.scale, capRef.current.scale, planeRef.current.scale], { x: 0, y: 0, z: 0 });
 
-            // Segment 1: Hero -> Mission
+            
             tl.to(masterGroup.current.position, { x: -3, y: -1, z: -1, ease: "power1.inOut" }, 0)
                 .to(masterGroup.current.rotation, { x: 1, y: 2, z: 0.5, ease: "power1.inOut" }, 0)
                 .to(nodeRef.current.scale, { x: 0, y: 0, z: 0, ease: "back.in(1.5)" }, 0)
                 .to(bulbRef.current.scale, { x: 1.2, y: 1.2, z: 1.2, ease: "back.out(1.5)", delay: 0.2 }, 0);
 
-            // Segment 2: Mission -> Features
+            
             tl.to(masterGroup.current.position, { x: 0, y: -2, z: -3, ease: "power1.inOut" }, 1)
                 .to(masterGroup.current.rotation, { x: -0.5, y: -1, z: -0.2, ease: "power1.inOut" }, 1)
                 .to(bulbRef.current.scale, { x: 0, y: 0, z: 0, ease: "back.in(1.5)" }, 1)
                 .to(phoneRef.current.scale, { x: 1, y: 1, z: 1, ease: "back.out(1.5)", delay: 0.2 }, 1);
 
-            // Segment 3: Features -> About
+            
             tl.to(masterGroup.current.position, { x: 3, y: -3, z: 0, ease: "power1.inOut" }, 2)
                 .to(masterGroup.current.rotation, { x: 0.2, y: 3, z: 0.3, ease: "power1.inOut" }, 2)
                 .to(phoneRef.current.scale, { x: 0, y: 0, z: 0, ease: "back.in(1.5)" }, 2)
                 .to(capRef.current.scale, { x: 1, y: 1, z: 1, ease: "back.out(1.5)", delay: 0.2 }, 2);
 
-            // Segment 4: About -> Contact
+            
             tl.to(masterGroup.current.position, { x: 0, y: -4, z: 2, ease: "power1.inOut" }, 3)
                 .to(masterGroup.current.rotation, { x: 0, y: 0, z: 0, ease: "power1.inOut" }, 3)
                 .to(capRef.current.scale, { x: 0, y: 0, z: 0, ease: "back.in(1.5)" }, 3)
@@ -151,7 +151,7 @@ const AnimatedSceneCluster = () => {
         return () => ctx.revert();
     }, []);
 
-    // Ambient floating for the active object
+    
     useFrame((state) => {
         if (masterGroup.current) {
             masterGroup.current.position.y += Math.sin(state.clock.elapsedTime * 2) * 0.002;
