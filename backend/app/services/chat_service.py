@@ -24,17 +24,23 @@ def _sort_messages(messages: list[dict]) -> list[dict]:
 
 def _build_thread_name(thread: dict, user_id: str, user_map: dict[str, dict], projects: dict[str, dict], groups: dict[str, dict]) -> tuple[str, str, bool]:
     if thread['type'] in {'personal', 'request'}:
-        other_user_id = next(participant for participant in thread['participant_ids'] if participant != user_id)
-        other_user = user_map[other_user_id]
-        return other_user['name'], other_user['avatar'], other_user.get('online', False)
+        other_user_id = next((p for p in thread['participant_ids'] if p != user_id), None)
+        other_user = user_map.get(other_user_id) if other_user_id else None
+        if other_user:
+            return other_user['name'], other_user['avatar'], other_user.get('online', False)
+        return 'Deleted User', '', False
 
     if thread['type'] == 'project' and thread.get('project_id') in projects:
         project = projects[thread['project_id']]
-        return thread.get('title') or f"Group: {project['title']}", thread.get('avatar') or user_map[project['owner_id']]['avatar'], False
+        owner = user_map.get(project['owner_id'])
+        fallback_avatar = owner['avatar'] if owner else ''
+        return thread.get('title') or f"Group: {project['title']}", thread.get('avatar') or fallback_avatar, False
 
     if thread['type'] == 'group' and thread.get('group_id') in groups:
         group = groups[thread['group_id']]
-        return thread.get('title') or group['name'], thread.get('avatar') or user_map[group['owner_id']]['avatar'], False
+        owner = user_map.get(group['owner_id'])
+        fallback_avatar = owner['avatar'] if owner else ''
+        return thread.get('title') or group['name'], thread.get('avatar') or fallback_avatar, False
 
     return thread.get('title', 'Conversation'), thread.get('avatar', ''), False
 
