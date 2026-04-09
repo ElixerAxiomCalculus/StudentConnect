@@ -2,6 +2,7 @@
 A full-stack student collaboration and matching platform. Students create profiles, complete a personality and interest questionnaire, get matched with compatible peers, and collaborate through chat, forums, projects, and groups.
 
 
+
 ---
 
 ## Features
