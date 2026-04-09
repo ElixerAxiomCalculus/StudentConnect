@@ -5,10 +5,28 @@ from copy import deepcopy
 from app.services.common import add_feed_item, add_recent_activity, count_forum_replies, get_user_map, new_id, now_iso, serialize_user_summary
 
 
+_DELETED_USER_SUMMARY = {
+    'id': 'deleted',
+    'name': 'Deleted User',
+    'major': '',
+    'year': '',
+    'avatar': '',
+    'online': False,
+    'bio': '',
+}
+
+
+def _resolve_author(user_map: dict[str, dict], author_id: str) -> dict:
+    user = user_map.get(author_id)
+    if user is None:
+        return dict(_DELETED_USER_SUMMARY)
+    return serialize_user_summary(user)
+
+
 def _serialize_reply(reply: dict, user_map: dict[str, dict]) -> dict:
     return {
         'id': reply['id'],
-        'author': serialize_user_summary(user_map[reply['author_id']]),
+        'author': _resolve_author(user_map, reply['author_id']),
         'text': reply['text'],
         'time': reply['time'],
         'upvotes': reply.get('upvotes', 0),
@@ -19,7 +37,7 @@ def _serialize_reply(reply: dict, user_map: dict[str, dict]) -> dict:
 def _serialize_comment(comment: dict, user_map: dict[str, dict]) -> dict:
     return {
         'id': comment['id'],
-        'author': serialize_user_summary(user_map[comment['author_id']]),
+        'author': _resolve_author(user_map, comment['author_id']),
         'text': comment['text'],
         'time': comment['time'],
         'upvotes': comment.get('upvotes', 0),
@@ -34,7 +52,7 @@ def _serialize_thread(thread: dict, user_map: dict[str, dict]) -> dict:
         'id': thread['_id'],
         'categoryId': thread['category_id'],
         'title': thread['title'],
-        'author': serialize_user_summary(user_map[thread['author_id']]),
+        'author': _resolve_author(user_map, thread['author_id']),
         'createdAt': thread['created_at'],
         'lastActivity': thread['last_activity'],
         'upvotes': thread.get('upvotes', 0),
